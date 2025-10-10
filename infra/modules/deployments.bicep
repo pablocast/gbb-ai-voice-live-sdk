@@ -14,12 +14,12 @@ resource modelDeployment 'Microsoft.CognitiveServices/accounts/deployments@2025-
   name: model.name
   parent: cognitiveService
   sku: {
-    name: model.sku
+    name: model.skuName
     capacity: model.capacity
   }
   properties: {
     model: {
-      format: model.publisher
+      format: model.format
       name: model.name
       version: model.version
     }

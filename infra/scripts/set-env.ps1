@@ -21,11 +21,10 @@ $envContent = @"
 # Generated from Bicep deployment outputs
 
 # ---- AOAI/LLM/Embedding Model Variables ----
-APIM_RESOURCE_GATEWAY_URL=$(Get-AzdValue $azdEnvValues "apimResourceGatewayURL")
-API_KEY=$(Get-AzdValue $azdEnvValues "apiKey")
 AZURE_OPENAI_DEPLOYMENT_NAME=$(Get-AzdValue $azdEnvValues "azureOpenAiDeploymentName")
-AZURE_OPENAI_API_VERSION=$(Get-AzdValue $azdEnvValues "azureOpenAiApiVersion")
-
+AZURE_OPENAI_EMBEDDING_NAME=$(Get-AzdValue $azdEnvValues "azureEmbeddingDeploymentName")
+AZURE_VOICELIVE_API_KEY=$(Get-AzdValue $azdEnvValues "azureVoiceLiveApiKey")
+AZURE_VOICELIVE_ENDPOINT=$(Get-AzdValue $azdEnvValues "azureVoiceLiveEndpoint")
 "@
 
 # Write .env file

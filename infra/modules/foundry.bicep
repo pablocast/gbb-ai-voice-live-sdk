@@ -18,9 +18,6 @@ param modelsConfig array = []
 @description('Log Analytics Workspace Id')
 param lawId string = ''
 
-@description('APIM Pricipal Id')
-param  apimPrincipalId string
-
 @description('AI Foundry project name')
 param  foundryProjectName string = 'default'
 
@@ -33,6 +30,11 @@ param appInsightsId string = ''
 
 @description('Principal ID of the user or service principal that should have AI Project Manager role')
 param principalId string
+
+@secure()
+param aiSearchName string
+param aiSearchServiceResourceGroupName string
+param aiSearchServiceSubscriptionId string
 
 // ------------------
 //    VARIABLES
@@ -70,7 +72,6 @@ resource cognitiveServices 'Microsoft.CognitiveServices/accounts@2025-06-01' = [
 }]
 
 resource aiProject 'Microsoft.CognitiveServices/accounts/projects@2025-04-01-preview' = [for (config, i) in aiServicesConfig: {  
-  #disable-next-line BCP334
   name: '${foundryProjectName}-${config.name}'
   parent: cognitiveServices[i]
   location: config.location
@@ -130,13 +131,29 @@ resource appInsightsConnection 'Microsoft.CognitiveServices/accounts/connections
   }
 }]
 
+resource searchConnection 'Microsoft.CognitiveServices/accounts/projects/connections@2025-04-01-preview' = {
+  parent: aiProject[0]
+  name: '${cognitiveServices[0].name}-search-connection'
+  properties: {
+    category: 'CognitiveSearch'
+    target: 'https://${aiSearchName}.search.windows.net'
+    authType: 'AAD'
+    metadata: {
+      ApiType: 'Azure'
+      ResourceId: resourceId(aiSearchServiceSubscriptionId, aiSearchServiceResourceGroupName, 'Microsoft.Search/searchServices', aiSearchName)
+      location: reference(resourceId(aiSearchServiceSubscriptionId, aiSearchServiceResourceGroupName, 'Microsoft.Search/searchServices', aiSearchName), '2024-06-01-preview', 'full').location
+    }
+  }
+}
+
+
 resource roleAssignmentCognitiveServicesUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for (config, i) in aiServicesConfig: {
   scope: cognitiveServices[i]
   name: guid(subscription().id, resourceGroup().id, config.name, cognitiveServicesUserRoleDefinitionID)
     properties: {
         roleDefinitionId: cognitiveServicesUserRoleDefinitionID
-        principalId: apimPrincipalId
-        principalType: 'ServicePrincipal'
+        principalId: principalId
+        principalType: 'User'
     }
 }]
 
@@ -149,6 +166,9 @@ module modelDeployments './deployments.bicep' = [for (config, i) in aiServicesCo
 }]
 
 
+
+
+
 // ------------------
 //    OUTPUTS
 // ------------------
@@ -159,9 +179,11 @@ output extendedAIServicesConfig array = [for (config, i) in aiServicesConfig: {
   location: config.location
   priority: config.?priority
   weight: config.?weight
+  principalId: aiProject[i].identity.principalId
   // Additional properties
   cognitiveService: cognitiveServices[i]
   cognitiveServiceName: cognitiveServices[i].name
+  apiKey: listKeys(cognitiveServices[i].id, '2025-06-01').key1
   endpoint: cognitiveServices[i].properties.endpoint
   foundryProjectEndpoint: 'https://${cognitiveServices[i].name}.services.ai.azure.com/api/projects/${aiProject[i].name}'
 }]

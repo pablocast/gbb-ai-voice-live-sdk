@@ -9,22 +9,20 @@ param aiServicesConfig = [
 
 param modelsConfig = [
   {
-    name: 'gpt-realtime'
-    publisher: 'OpenAI'
-    version: '2025-08-28'
-    sku: 'GlobalStandard'
-    capacity: 10
+    name: 'gpt-4.1'
+    format: 'OpenAI'
+    version: '2025-04-14'
+    skuName: 'GlobalStandard'
+    capacity: 1000
   }
-]
-
-param apimSku = 'Basicv2'
-
-param apimSubscriptionsConfig = [
   {
-    name: 'subscription1'
-    displayName: 'Subscription 1'
+    name: 'text-embedding-3-large'
+    format: 'OpenAI'
+    version: '1'
+    skuName: 'Standard'
+    capacity: 350
   }
 ]
 
 param principalId = readEnvironmentVariable('AZURE_PRINCIPAL_ID', 'principalId')
-param azureOpenAiApiVersion = '2024-10-01-preview'
+

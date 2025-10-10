@@ -9,6 +9,8 @@ azure-ai-ml
 azure-ai-agents==1.0.0
 azure-storage-blob
 azure-ai-documentintelligence==1.0.0
+azure-ai-voicelive==1.0.0
+azure-ai-voicelive[aiohttp]==1.0.0
 
 # Telemetry and Monitoring
 azure-monitor-opentelemetry                  # Azure Monitor OpenTelemetry integration
@@ -23,25 +25,18 @@ opentelemetry-exporter-otlp-proto-grpc
 jupyter                                      # Jupyter notebook interface
 python-dotenv                                # Environment variable management
 notebook                                     # Jupyter notebook core
-ipykernel                                    # IPython kernel for Jupyter
-pandas                                       # Data manipulation library
-tabulate                                     # Pretty-print tabular data
-nbformat                                     # Notebook format conversion
+ipykernel                                    # IPython kernel for Jupyteron
 asyncio                                      # Async I/O support
 typing                                       # Type hinting support
-aiofiles
-
-# MCP protocol
-mcp
 
 # Black
 black[jupyter]
 
-# Evaluate
-scikit-learn
 
 # Realtime
 aiohttp
 openai
 openai[realtime]
 fastrtc[vad]
+pyaudio
+
