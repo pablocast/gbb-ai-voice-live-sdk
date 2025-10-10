@@ -43,7 +43,8 @@ from azure.ai.voicelive.models import (
     ServerEventConversationItemCreated,
     ServerEventResponseFunctionCallArgumentsDone,
     AudioInputTranscriptionOptions,
-    AzureSemanticVad
+    AzureSemanticVad,
+    ResponseCreateParams
 )
 
 # Set up logging
@@ -574,12 +575,13 @@ class AsyncFunctionCallingClient:
                     previous_item_id=previous_item_id,
                     item=function_output
                 )
+
                 logger.info(f"Function result sent: {result}")
                 
                 # Create a new response to process the function result
-                await connection.response.create(
-                    additional_instructions="Respond to the user based on the function result."
-                )
+                await connection.response.create()
+
+                await connection.response.send()
                 
                 # Wait for the final response
                 response = await _wait_for_match(
