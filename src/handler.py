@@ -43,7 +43,7 @@ from azure.ai.voicelive.models import (
     ServerEventConversationItemCreated,
     ServerEventResponseFunctionCallArgumentsDone,
     AudioInputTranscriptionOptions,
-    AzureSemanticDetection
+    AzureSemanticVad
 )
 
 # Set up logging
@@ -422,7 +422,7 @@ class AsyncFunctionCallingClient:
         voice_config = AzureStandardVoice(name=self.voice, type="azure-standard")
         
         # Create turn detection configuration
-        turn_detection_config = ServerVad(threshold=0.5, prefix_padding_ms=300, silence_duration_ms=500)
+        turn_detection_config = AzureSemanticVad(threshold=0.5, prefix_padding_ms=300, silence_duration_ms=500) #ServerVad(threshold=0.5, prefix_padding_ms=300, silence_duration_ms=500)
         
         # Create session configuration with function tools
         session_config = RequestSession(

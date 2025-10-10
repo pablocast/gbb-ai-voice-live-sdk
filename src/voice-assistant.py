@@ -7,7 +7,7 @@ import logging
 import asyncio
 
 # Own modules
-from handler import AsyncFunctionCallingClient
+from handler import AsyncFunctionCallingClient, AudioProcessor
 import utilities as utils
 
 logging.basicConfig(level=logging.INFO)
