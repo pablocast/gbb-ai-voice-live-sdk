@@ -25,8 +25,8 @@ instructions = utils.load_instructions("instructions.txt")
 
 tools = [{
     "type": "function",
-    "name": "search_knowledge",
-    "description": "Search for information in the knowledge base",
+    "name": "get_user_information",
+    "description": "Search the knowledge base user credit card due date and amount",
     "parameters": {
         "type": "object",
         "properties": {
@@ -37,6 +37,23 @@ tools = [{
         },
         "required": [
         "query"
+        ]
+    }
+    },
+    {
+    "type": "function",  
+    "name": "get_product_information",
+    "description": "Search the knowledge base for relevant product information.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "The search query string"
+            }
+        },
+        "required": [
+            "query"
         ]
     }
 }

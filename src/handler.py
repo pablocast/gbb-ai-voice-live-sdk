@@ -345,12 +345,14 @@ class AsyncFunctionCallingClient:
         # Import your actual tool functions
         try:
             from tools import (
-                search_knowledge
+                get_user_information,
+                get_product_information
             )
             
             # Map function names to implementations
             available_implementations = {
-                'search_knowledge': search_knowledge
+                'get_user_information': get_user_information,
+                'get_product_information': get_product_information
             }
             
             # Only include functions that are defined in tools
