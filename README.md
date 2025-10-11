@@ -14,7 +14,7 @@ This repository exemplifies [Voice Live API](https://learn.microsoft.com/en-us/a
 +  [Sign in to Azure with Azure CLI](https://learn.microsoft.com/cli/azure/authenticate-azure-cli-interactively)
 +  [VS Code](https://code.visualstudio.com/) installed with the [Jupyter notebook extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter) enabled
 
-### ⚙️ Set Up
+## ⚙️ Set Up
 
 This sample uses [`azd`](https://learn.microsoft.com/azure/developer/azure-developer-cli/) and a bicep template to deploy all Azure resources:
 
@@ -48,7 +48,7 @@ This sample uses [`azd`](https://learn.microsoft.com/azure/developer/azure-devel
 
 Ask questions like `Qual a data de vencimento da minha fatura` and `Quais são os beneficios do meu cartao`
 
-### 💣 **Delete the Resources**
+## 💣 **Delete the Resources**
    ```bash
    azd down --purge
    ```
