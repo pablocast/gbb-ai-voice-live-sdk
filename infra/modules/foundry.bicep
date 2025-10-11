@@ -186,4 +186,5 @@ output extendedAIServicesConfig array = [for (config, i) in aiServicesConfig: {
   apiKey: listKeys(cognitiveServices[i].id, '2025-06-01').key1
   endpoint: cognitiveServices[i].properties.endpoint
   foundryProjectEndpoint: 'https://${cognitiveServices[i].name}.services.ai.azure.com/api/projects/${aiProject[i].name}'
+  openAiEndpoint: 'https://${cognitiveServices[i].name}.openai.azure.com/'
 }]
