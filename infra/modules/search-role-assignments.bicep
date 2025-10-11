@@ -78,3 +78,15 @@ resource userSearchIndexDataReader 'Microsoft.Authorization/roleAssignments@2020
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', '1407120a-92aa-4202-b7e9-c0e197c71c8f')
   }
 }
+
+
+// Necessary for integrated vectorization, for search service to access OpenAI embeddings
+resource searchServiceEmbeddingRoleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid(userPrincipalId,  '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd', searchService.id)
+  scope: resourceGroup()
+  properties: {
+    principalType: 'ServicePrincipal'
+    principalId: searchService.identity.principalId
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')
+  }
+}
