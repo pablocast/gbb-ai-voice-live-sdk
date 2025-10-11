@@ -42,8 +42,7 @@ This sample uses [`azd`](https://learn.microsoft.com/azure/developer/azure-devel
 ## 🎤 Talk to the agent
    ```bash
    source .venv/bin/activate
-   python src/voice-assitant.py
-   
+   python src/voice-assitant.py  
    ```
 
 Ask questions like `Qual a data de vencimento da minha fatura` and `Quais são os beneficios do meu cartao`
