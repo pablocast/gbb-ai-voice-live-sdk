@@ -206,8 +206,6 @@ if __name__ == "__main__":
 
     logger = logging.getLogger("voicerag")
 
-    load_azd_env()
-
     logger.info("Checking if we need to set up Azure AI Search index...")
     if os.environ.get("AZURE_SEARCH_REUSE_EXISTING") == "true":
         logger.info("Since an existing Azure AI Search index is being used, no changes will be made to the index.")
@@ -218,8 +216,8 @@ if __name__ == "__main__":
     # Used to name index, indexer, data source and skillset
     AZURE_SEARCH_INDEX = os.environ["AZURE_SEARCH_INDEX"]
     AZURE_OPENAI_EMBEDDING_ENDPOINT = os.environ["AZURE_OPENAI_ENDPOINT"]
-    AZURE_OPENAI_EMBEDDING_DEPLOYMENT = os.environ["AZURE_OPENAI_EMBEDDING_DEPLOYMENT"]
-    AZURE_OPENAI_EMBEDDING_MODEL = os.environ["AZURE_OPENAI_EMBEDDING_MODEL"]
+    AZURE_OPENAI_EMBEDDING_DEPLOYMENT = os.environ["AZURE_OPENAI_EMBEDDING_NAME"]
+    AZURE_OPENAI_EMBEDDING_MODEL = os.environ["AZURE_OPENAI_EMBEDDING_NAME"]
     EMBEDDINGS_DIMENSIONS = 3072
     AZURE_SEARCH_ENDPOINT = os.environ["AZURE_SEARCH_ENDPOINT"]
     AZURE_STORAGE_ENDPOINT = os.environ["AZURE_STORAGE_ENDPOINT"]
