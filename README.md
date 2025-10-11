@@ -9,7 +9,7 @@ This repository exemplifies [Voice Live API](https://learn.microsoft.com/en-us/a
 
 + [azd](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd), used to deploy all Azure resources and assets used in this sample.
 + [PowerShell Core pwsh](https://github.com/PowerShell/powershell/releases) if using Windows
-+ [Python 3.12](https://www.python.org/downloads/release/python-3120/)
++ [Python 3.10](https://www.python.org/downloads/release/python-3100/)
 +  [An Azure Subscription](https://azure.microsoft.com/free/) with Contributor permissions
 +  [Sign in to Azure with Azure CLI](https://learn.microsoft.com/cli/azure/authenticate-azure-cli-interactively)
 +  [VS Code](https://code.visualstudio.com/) installed with the [Jupyter notebook extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter) enabled
@@ -20,7 +20,7 @@ This sample uses [`azd`](https://learn.microsoft.com/azure/developer/azure-devel
 
 1. **Python Environment Setup**
    ```bash
-   python3.12 -m venv .venv
+   python3.10 -m venv .venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    pip install -r requirements.txt
    ```
