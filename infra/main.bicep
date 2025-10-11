@@ -48,6 +48,7 @@ module appInsightsModule './modules/appinsights.bicep' = {
 module searchModule './modules/search.bicep' = {
   name: 'searchModule'
   params: {
+    name: 'aisearch-${resourceSuffix}'
     location: resourceGroup().location
   }
 }

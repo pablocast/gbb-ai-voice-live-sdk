@@ -1,8 +1,8 @@
-param location string = resourceGroup().location
-param aiSearchName string = 'aisearch-${uniqueString(resourceGroup().id)}'
+param location string 
+param name string 
 
 resource aiSearch 'Microsoft.Search/searchServices@2024-06-01-preview' =  {
-  name: aiSearchName
+  name: name
   location: location
   identity: {
     type: 'SystemAssigned'
