@@ -1,6 +1,7 @@
 # <img src="img/Azure-AI-Studio.png" alt="Azure Foundry" style="width:30px;height:30px;"/> Voice agent with Azure AI Voice Live API
 
 ### 📋 Description
+
 This repository exemplifies [Voice Live API](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/voice-live), enables real-time speech-to-speech conversational experience through a unified API powered by generative AI models. With Voice Live API, developers can easily voice-enable any agent built with the [Azure AI Foundry Agent Service](https://learn.microsoft.com/en-us/agent-framework/user-guide/agents/agent-types/azure-ai-foundry-agent?pivots=programming-language-python).
 
 
@@ -38,15 +39,16 @@ This sample uses [`azd`](https://learn.microsoft.com/azure/developer/azure-devel
    
    After running, an `.env` file will be created with all necessary environment variables
 
-3. **Talk to the agent**
+## 🎤 Talk to the agent
    ```bash
    source .venv/bin/activate
    python src/voice-assitant.py
    
    ```
 
-### 💣 **Delete the Resources**
+Ask questions like `Qual a data de vencimento da minha fatura` and `Quais são os beneficios do meu cartao`
 
-    ```bash
+### 💣 **Delete the Resources**
+   ```bash
    azd down --purge
    ```
