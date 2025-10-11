@@ -31,7 +31,6 @@ from azure.ai.voicelive.aio import connect
 from azure.ai.voicelive.models import (
     RequestSession,
     ServerEventType,
-    ServerVad,
     AzureStandardVoice,
     Modality,
     InputAudioFormat, 
@@ -44,8 +43,11 @@ from azure.ai.voicelive.models import (
     ServerEventResponseFunctionCallArgumentsDone,
     AudioInputTranscriptionOptions,
     AzureSemanticVad,
+    ServerEventConversationItemCreated,
+    MessageItem,
     ResponseCreateParams
 )
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -583,19 +585,6 @@ class AsyncFunctionCallingClient:
                 # Create a new response to process the function result
                 await connection.response.create()
 
-                await connection.response.send()
-                
-                # Wait for the final response
-                response = await _wait_for_match(
-                    connection, 
-                    lambda e: e.type == ServerEventType.RESPONSE_OUTPUT_ITEM_DONE and hasattr(e, 'item') and e.item.id != previous_item_id
-                )
-                
-                if hasattr(response, 'item') and hasattr(response.item, 'content') and response.item.content:
-                    if hasattr(response.item.content[0], 'transcript'):
-                        transcript = response.item.content[0].transcript
-                        logger.info(f"Final response transcript: {transcript}")
-                    
             else:
                 logger.error(f"Unknown function: {function_name}")
                 
