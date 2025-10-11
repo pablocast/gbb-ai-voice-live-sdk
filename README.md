@@ -20,7 +20,7 @@ This sample uses [`azd`](https://learn.microsoft.com/azure/developer/azure-devel
 
 1. **Python Environment Setup**
    ```bash
-   python3.11 -m venv .venv
+   python3.12 -m venv .venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    pip install -r requirements.txt
    ```

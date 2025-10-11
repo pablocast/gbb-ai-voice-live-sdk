@@ -74,17 +74,17 @@ module foundryModule './modules/foundry.bicep' = {
   }
 
 // 5. Speech Service for Voice Live API
-module speechModule './modules/speech.bicep' = {
-  name: 'speechModule'
-  params: {
-    speechServiceName: 'speech-voicelab-${resourceSuffix}'
-    location: resourceGroup().location
-    tags: {
-      project: 'VoiceLab'
-      environment: 'demo'
-    }
-  }
-}
+// module speechModule './modules/speech.bicep' = {
+//   name: 'speechModule'
+//   params: {
+//     speechServiceName: 'speech-voicelab-${resourceSuffix}'
+//     location: resourceGroup().location
+//     tags: {
+//       project: 'VoiceLab'
+//       environment: 'demo'
+//     }
+//   }
+// }
 
 module searchRoleAssignments './modules/search-role-assignments.bicep' = {
   name: 'ai-search-ra-${resourceSuffix}-deployment'
@@ -94,6 +94,35 @@ module searchRoleAssignments './modules/search-role-assignments.bicep' = {
     projectPrincipalId: foundryModule.outputs.extendedAIServicesConfig[0].principalId
     userPrincipalId: principalId
   }
+}
+
+// 6. Storage Account for document storage
+module storageModule './modules/storage.bicep' = {
+  name: 'storageModule'
+  params: {
+    storageName: 'stgvoicelab${resourceSuffix}'
+    location: resourceGroup().location
+    sku: {
+      name: 'Standard_LRS'
+    }
+    docsContainerName: 'documents'
+  }
+  dependsOn: [
+    foundryModule
+  ]
+}
+
+module storageRoleAssignments './modules/storage-role-assignments.bicep' = {
+  name: 'storage-ra-${resourceSuffix}-deployment'
+  params: {
+    storageAccountName: storageModule.outputs.name
+    searchServicePrincipalId: searchModule.outputs.aiSearchPrincipalId
+    principalId: principalId
+  }
+  dependsOn: [
+    storageModule
+    searchModule
+  ]
 }
 
 // resource apimService 'Microsoft.ApiManagement/service@2024-06-01-preview' existing = {
@@ -205,4 +234,10 @@ output azureOpenAiDeploymentName string = modelsConfig[0].name
 output azureEmbeddingDeploymentName string = modelsConfig[1].name
 output azureVoiceLiveApiKey string = foundryModule.outputs.extendedAIServicesConfig[0].apiKey
 output azureVoiceLiveEndpoint string = foundryModule.outputs.extendedAIServicesConfig[0].endpoint
-
+output azureSearchIndex string = searchModule.outputs.aiSearchName
+output azureOpenAiEndpoint string = foundryModule.outputs.extendedAIServicesConfig[0].endpoint
+output azureOpenAiEmbeddingModel string = modelsConfig[1].name
+output azureSearchEndpoint string = searchModule.outputs.aiSearchEndpoint
+output azureStorageEndpoint string = storageModule.outputs.endpoint
+output azureStorageConnectionString string = storageModule.outputs.connectionString
+output azureStorageContainer string = storageModule.outputs.containerName

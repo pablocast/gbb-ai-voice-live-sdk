@@ -25,6 +25,19 @@ AZURE_OPENAI_DEPLOYMENT_NAME=$(Get-AzdValue $azdEnvValues "azureOpenAiDeployment
 AZURE_OPENAI_EMBEDDING_NAME=$(Get-AzdValue $azdEnvValues "azureEmbeddingDeploymentName")
 AZURE_VOICELIVE_API_KEY=$(Get-AzdValue $azdEnvValues "azureVoiceLiveApiKey")
 AZURE_VOICELIVE_ENDPOINT=$(Get-AzdValue $azdEnvValues "azureVoiceLiveEndpoint")
+
+# ---- Azure Search Variables ----
+AZURE_SEARCH_INDEX=$(Get-AzdValue $azdEnvValues "azureSearchIndex")
+AZURE_SEARCH_ENDPOINT=$(Get-AzdValue $azdEnvValues "azureSearchEndpoint")
+
+# ---- Azure OpenAI Additional Variables ----
+AZURE_OPENAI_ENDPOINT=$(Get-AzdValue $azdEnvValues "azureOpenAiEndpoint")
+AZURE_OPENAI_EMBEDDING_MODEL=$(Get-AzdValue $azdEnvValues "azureOpenAiEmbeddingModel")
+
+# ---- Azure Storage Variables ----
+AZURE_STORAGE_ENDPOINT=$(Get-AzdValue $azdEnvValues "azureStorageEndpoint")
+AZURE_STORAGE_CONNECTION_STRING=$(Get-AzdValue $azdEnvValues "azureStorageConnectionString")
+AZURE_STORAGE_CONTAINER=$(Get-AzdValue $azdEnvValues "azureStorageContainer")
 "@
 
 # Write .env file
