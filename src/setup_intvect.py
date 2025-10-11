@@ -96,7 +96,7 @@ def setup_index(azure_credential, index_name, azure_search_endpoint, azure_stora
                         )
                     ],
                     profiles=[
-                        VectorSearchProfile(name="vp", algorithm_configuration_name="algo", vectorizer="openai_vectorizer")
+                        VectorSearchProfile(name="vp", algorithm_configuration_name="algo", vectorizer_name="openai_vectorizer")
                     ]
                 ),
                 semantic_search=SemanticSearch(
