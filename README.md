@@ -1,4 +1,4 @@
-# <img src="img/ai_foundry.png" alt="Azure Foundry" style="width:60px;height:30px;"/> Voice agent with Azure AI Voice Live API
+# <img src="img/ai_foundry.png" alt="Azure Foundry" style="width:70px;height:40px;"/>Voice agent with Azure AI Voice Live API
 
 ### 📋 Description
 
