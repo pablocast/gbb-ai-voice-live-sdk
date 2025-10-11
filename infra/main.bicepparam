@@ -25,4 +25,4 @@ param modelsConfig = [
 ]
 
 param principalId = readEnvironmentVariable('AZURE_PRINCIPAL_ID', 'principalId')
-
+param searchIndexName = 'voicerag-intvect'

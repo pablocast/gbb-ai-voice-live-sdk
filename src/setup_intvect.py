@@ -4,11 +4,11 @@ import os
 import subprocess
 
 from azure.core.exceptions import ResourceExistsError
-from azure.identity import AzureDeveloperCliCredential
+from azure.identity import DefaultAzureCredential
 from azure.search.documents.indexes import SearchIndexClient, SearchIndexerClient
 from azure.search.documents.indexes.models import (
     AzureOpenAIEmbeddingSkill,
-    AzureOpenAIParameters,
+    AzureOpenAITokenizerParameters,
     AzureOpenAIVectorizer,
     FieldMapping,
     HnswAlgorithmConfiguration,
@@ -24,7 +24,7 @@ from azure.search.documents.indexes.models import (
     SearchIndexerDataContainer,
     SearchIndexerDataSourceConnection,
     SearchIndexerDataSourceType,
-    SearchIndexerIndexProjections,
+    SearchIndexerIndexProjection,
     SearchIndexerIndexProjectionSelector,
     SearchIndexerIndexProjectionsParameters,
     SearchIndexerSkillset,
@@ -42,22 +42,7 @@ from azure.storage.blob import BlobServiceClient
 from dotenv import load_dotenv
 from rich.logging import RichHandler
 
-
-def load_azd_env():
-    """Get path to current azd env file and load file using python-dotenv"""
-    result = subprocess.run("azd env list -o json", shell=True, capture_output=True, text=True)
-    if result.returncode != 0:
-        raise Exception("Error loading azd env")
-    env_json = json.loads(result.stdout)
-    env_file_path = None
-    for entry in env_json:
-        if entry["IsDefault"]:
-            env_file_path = entry["DotEnvPath"]
-    if not env_file_path:
-        raise Exception("No default azd env file found")
-    logger.info(f"Loading azd env from {env_file_path}")
-    load_dotenv(env_file_path, override=True)
-
+load_dotenv(override=True)
 
 def setup_index(azure_credential, index_name, azure_search_endpoint, azure_storage_connection_string, azure_storage_container, azure_openai_embedding_endpoint, azure_openai_embedding_deployment, azure_openai_embedding_model, azure_openai_embeddings_dimensions):
     index_client = SearchIndexClient(azure_search_endpoint, azure_credential)
@@ -103,7 +88,7 @@ def setup_index(azure_credential, index_name, azure_search_endpoint, azure_stora
                     vectorizers=[
                         AzureOpenAIVectorizer(
                             name="openai_vectorizer",
-                            azure_open_ai_parameters=AzureOpenAIParameters(
+                            azure_open_ai_parameters=AzureOpenAITokenizerParameters(
                                 resource_uri=azure_openai_embedding_endpoint,
                                 deployment_id=azure_openai_embedding_deployment,
                                 model_name=azure_openai_embedding_model
@@ -152,7 +137,7 @@ def setup_index(azure_credential, index_name, azure_search_endpoint, azure_stora
                         inputs=[InputFieldMappingEntry(name="text", source="/document/pages/*")],
                         outputs=[OutputFieldMappingEntry(name="embedding", target_name="text_vector")])
                 ],
-                index_projections=SearchIndexerIndexProjections(
+                index_projections=SearchIndexerIndexProjection(
                     selectors=[
                         SearchIndexerIndexProjectionSelector(
                             target_index_name=index_name,
@@ -241,7 +226,7 @@ if __name__ == "__main__":
     AZURE_STORAGE_CONNECTION_STRING = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
     AZURE_STORAGE_CONTAINER = os.environ["AZURE_STORAGE_CONTAINER"]
 
-    azure_credential = AzureDeveloperCliCredential(tenant_id=os.environ["AZURE_TENANT_ID"], process_timeout=60)
+    azure_credential = DefaultAzureCredential()
 
     setup_index(azure_credential,
         index_name=AZURE_SEARCH_INDEX, 

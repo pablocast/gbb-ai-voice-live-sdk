@@ -6,6 +6,7 @@ param aiServicesConfig array = []
 param modelsConfig array = []
 param foundryProjectName string = 'demo-realtime'
 param principalId string
+param searchIndexName string
 
 // ------------------
 //    VARIABLES
@@ -234,7 +235,7 @@ output azureOpenAiDeploymentName string = modelsConfig[0].name
 output azureEmbeddingDeploymentName string = modelsConfig[1].name
 output azureVoiceLiveApiKey string = foundryModule.outputs.extendedAIServicesConfig[0].apiKey
 output azureVoiceLiveEndpoint string = foundryModule.outputs.extendedAIServicesConfig[0].endpoint
-output azureSearchIndex string = searchModule.outputs.aiSearchName
+output azureSearchIndex string = searchIndexName
 output azureOpenAiEndpoint string = foundryModule.outputs.extendedAIServicesConfig[0].openAiEndpoint
 output azureOpenAiEmbeddingModel string = modelsConfig[1].name
 output azureSearchEndpoint string = searchModule.outputs.aiSearchEndpoint
