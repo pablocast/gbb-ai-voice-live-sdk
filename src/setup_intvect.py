@@ -8,7 +8,7 @@ from azure.identity import DefaultAzureCredential
 from azure.search.documents.indexes import SearchIndexClient, SearchIndexerClient
 from azure.search.documents.indexes.models import (
     AzureOpenAIEmbeddingSkill,
-    AzureOpenAITokenizerParameters,
+    AzureOpenAIVectorizerParameters,
     AzureOpenAIVectorizer,
     FieldMapping,
     HnswAlgorithmConfiguration,
@@ -87,10 +87,10 @@ def setup_index(azure_credential, index_name, azure_search_endpoint, azure_stora
                     ],
                     vectorizers=[
                         AzureOpenAIVectorizer(
-                            name="openai_vectorizer",
-                            azure_open_ai_parameters=AzureOpenAITokenizerParameters(
-                                resource_uri=azure_openai_embedding_endpoint,
-                                deployment_id=azure_openai_embedding_deployment,
+                            vectorizer_name="openai_vectorizer",
+                            parameters=AzureOpenAIVectorizerParameters(
+                                resource_url=azure_openai_embedding_endpoint,
+                                deployment_name=azure_openai_embedding_deployment,
                                 model_name=azure_openai_embedding_model
                             )
                         )
@@ -129,15 +129,15 @@ def setup_index(azure_credential, index_name, azure_search_endpoint, azure_stora
                         outputs=[OutputFieldMappingEntry(name="textItems", target_name="pages")]),
                     AzureOpenAIEmbeddingSkill(
                         context="/document/pages/*",
-                        resource_uri=azure_openai_embedding_endpoint,
+                        resource_url=azure_openai_embedding_endpoint,
                         api_key=None,
-                        deployment_id=azure_openai_embedding_deployment,
+                        deployment_name=azure_openai_embedding_deployment,
                         model_name=azure_openai_embedding_model,
                         dimensions=azure_openai_embeddings_dimensions,
                         inputs=[InputFieldMappingEntry(name="text", source="/document/pages/*")],
                         outputs=[OutputFieldMappingEntry(name="embedding", target_name="text_vector")])
                 ],
-                index_projections=SearchIndexerIndexProjection(
+                index_projection=SearchIndexerIndexProjection(
                     selectors=[
                         SearchIndexerIndexProjectionSelector(
                             target_index_name=index_name,
