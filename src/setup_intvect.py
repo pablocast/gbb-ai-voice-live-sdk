@@ -184,23 +184,23 @@ def upload_documents(azure_credential, indexer_name, azure_search_endpoint, azur
         container_client.create_container()
     existing_blobs = [blob.name for blob in container_client.list_blobs()]
 
-    # # Open each file in /data folder
-    # for file in os.scandir("data"):
-    #     with open(file.path, "rb") as opened_file:
-    #         filename = os.path.basename(file.path)
-    #         # Check if blob already exists
-    #         if filename in existing_blobs:
-    #             logger.info("Blob already exists, skipping file: %s", filename)
-    #         else:
-    #             logger.info("Uploading blob for file: %s", filename)
-    #             blob_client = container_client.upload_blob(filename, opened_file, overwrite=True)
+    # Open each file in /data folder
+    for file in os.scandir("data"):
+        with open(file.path, "rb") as opened_file:
+            filename = os.path.basename(file.path)
+            # Check if blob already exists
+            if filename in existing_blobs:
+                logger.info("Blob already exists, skipping file: %s", filename)
+            else:
+                logger.info("Uploading blob for file: %s", filename)
+                blob_client = container_client.upload_blob(filename, opened_file, overwrite=True)
 
-    # # Start the indexer
-    # try:
-    #     indexer_client.run_indexer(indexer_name)
-    #     logger.info("Indexer started. Any unindexed blobs should be indexed in a few minutes, check the Azure Portal for status.")
-    # except ResourceExistsError:
-    #     logger.info("Indexer already running, not starting again")
+    # Start the indexer
+    try:
+        indexer_client.run_indexer(indexer_name)
+        logger.info("Indexer started. Any unindexed blobs should be indexed in a few minutes, check the Azure Portal for status.")
+    except ResourceExistsError:
+        logger.info("Indexer already running, not starting again")
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.WARNING, format="%(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
@@ -229,15 +229,15 @@ if __name__ == "__main__":
 
     azure_credential = DefaultAzureCredential()
 
-    # setup_index(azure_credential,
-    #     index_name=AZURE_SEARCH_INDEX, 
-    #     azure_search_endpoint=AZURE_SEARCH_ENDPOINT,
-    #     azure_storage_connection_string=AZURE_STORAGE_CONNECTION_STRING,
-    #     azure_storage_container=AZURE_STORAGE_CONTAINER,
-    #     azure_openai_embedding_endpoint=AZURE_OPENAI_EMBEDDING_ENDPOINT,
-    #     azure_openai_embedding_deployment=AZURE_OPENAI_EMBEDDING_DEPLOYMENT,
-    #     azure_openai_embedding_model=AZURE_OPENAI_EMBEDDING_MODEL,
-    #     azure_openai_embeddings_dimensions=EMBEDDINGS_DIMENSIONS)
+    setup_index(azure_credential,
+        index_name=AZURE_SEARCH_INDEX, 
+        azure_search_endpoint=AZURE_SEARCH_ENDPOINT,
+        azure_storage_connection_string=AZURE_STORAGE_CONNECTION_STRING,
+        azure_storage_container=AZURE_STORAGE_CONTAINER,
+        azure_openai_embedding_endpoint=AZURE_OPENAI_EMBEDDING_ENDPOINT,
+        azure_openai_embedding_deployment=AZURE_OPENAI_EMBEDDING_DEPLOYMENT,
+        azure_openai_embedding_model=AZURE_OPENAI_EMBEDDING_MODEL,
+        azure_openai_embeddings_dimensions=EMBEDDINGS_DIMENSIONS)
 
     upload_documents(azure_credential,
         indexer_name=AZURE_SEARCH_INDEX,

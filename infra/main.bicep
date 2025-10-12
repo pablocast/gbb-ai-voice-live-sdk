@@ -20,12 +20,12 @@ var resourceSuffix = uniqueString(subscription().id, resourceGroup().id, deploym
 
 // 1. Log Analytics Workspace
 module lawModule './modules/workspaces.bicep' = {
-  name: 'lawModule'
+  name: 'lawModule-${resourceSuffix}'
 }
 
 // 2. Application Insights
 module appInsightsModule './modules/appinsights.bicep' = {
-  name: 'appInsightsModule'
+  name: 'appInsightsModule-${resourceSuffix}'
   params: {
     lawId: lawModule.outputs.id
     customMetricsOptedInType: 'WithDimensions'
@@ -62,6 +62,7 @@ var aiSearchServiceSubscriptionId = subscription().subscriptionId
 module foundryModule './modules/foundry.bicep' = {
     name: 'foundryModule'
     params: {
+      resourceSuffix: resourceSuffix
       aiServicesConfig: aiServicesConfig
       modelsConfig: modelsConfig
       foundryProjectName: foundryProjectName

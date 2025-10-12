@@ -35,12 +35,11 @@ param principalId string
 param aiSearchName string
 param aiSearchServiceResourceGroupName string
 param aiSearchServiceSubscriptionId string
+param resourceSuffix string
 
 // ------------------
 //    VARIABLES
 // ------------------
-
-var resourceSuffix = uniqueString(subscription().id, resourceGroup().id)
 var azureRoles = loadJsonContent('azure-roles.json')
 var cognitiveServicesUserRoleDefinitionID = resourceId('Microsoft.Authorization/roleDefinitions', azureRoles.CognitiveServicesUser)
 

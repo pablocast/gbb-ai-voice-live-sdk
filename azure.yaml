@@ -11,11 +11,15 @@ hooks:
       run: |
         echo "Deployment complete"
         echo "Setting up environment variables..."
-        chmod +x ./infra/scripts/set-env.sh
+        chmod +x ./infra/scripts/set-env.sh ./infra/scripts/set-up-intvect.sh
         ./infra/scripts/set-env.sh
+        echo "Setting up Index..."
+        ./infra/scripts/set-up-intvect.sh
     windows:
       shell: pwsh
       run: |
         Write-Host "Deployment complete"
         Write-Host "Setting up environment variables..."
         .\infra\scripts\set-env.ps1
+        Write-Host "Setting up Index..."
+        .\infra\scripts\set-up-intvect.ps1
