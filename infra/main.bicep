@@ -20,15 +20,19 @@ var resourceSuffix = uniqueString(subscription().id, resourceGroup().id, deploym
 
 // 1. Log Analytics Workspace
 module lawModule './modules/workspaces.bicep' = {
-  name: 'lawModule-${resourceSuffix}'
+  name: 'lawModule'
+  params: {
+    resourceSuffix: resourceSuffix
+  }
 }
 
 // 2. Application Insights
 module appInsightsModule './modules/appinsights.bicep' = {
-  name: 'appInsightsModule-${resourceSuffix}'
+  name: 'appInsightsModule'
   params: {
     lawId: lawModule.outputs.id
     customMetricsOptedInType: 'WithDimensions'
+    resourceSuffix: resourceSuffix
   }
 }
 

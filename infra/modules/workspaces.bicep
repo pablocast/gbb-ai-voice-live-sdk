@@ -9,7 +9,7 @@
 // ------------------
 
 @description('The suffix to append to the Log Analytics name. Defaults to a unique string based on subscription and resource group IDs.')
-param resourceSuffix string = uniqueString(subscription().id, resourceGroup().id)
+param resourceSuffix string
 
 @description('Name of the Log Analytics resource. Defaults to "workspace-<resourceSuffix>".')
 param logAnalyticsName string = 'workspace-${resourceSuffix}'
