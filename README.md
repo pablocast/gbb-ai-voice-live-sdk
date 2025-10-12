@@ -2,7 +2,7 @@
 
 ### 📋 Description
 
-This repository exemplifies [Voice Live API](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/voice-live), enables real-time speech-to-speech conversational experience through a unified API powered by generative AI models. With Voice Live API, developers can easily voice-enable any agent built with the [Azure AI Foundry Agent Service](https://learn.microsoft.com/en-us/agent-framework/user-guide/agents/agent-types/azure-ai-foundry-agent?pivots=programming-language-python).
+This repository exemplifies [Voice Live API](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/voice-live), which enables real-time speech-to-speech conversational experience through a unified API powered by generative AI models. With Voice Live API, developers can easily voice-enable any agent built with the [Azure AI Foundry Agent Service](https://learn.microsoft.com/en-us/agent-framework/user-guide/agents/agent-types/azure-ai-foundry-agent?pivots=programming-language-python).
 
 
 ## 🔧 Prerequisites
