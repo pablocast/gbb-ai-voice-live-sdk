@@ -8,7 +8,17 @@ import base64
 import signal
 import threading
 import queue
-from typing import Union, Optional, Dict, Any, Mapping, Callable, TYPE_CHECKING, List, cast
+from typing import (
+    Union,
+    Optional,
+    Dict,
+    Any,
+    Mapping,
+    Callable,
+    TYPE_CHECKING,
+    List,
+    cast,
+)
 from concurrent.futures import ThreadPoolExecutor
 
 # Audio processing imports
@@ -21,6 +31,7 @@ except ImportError:
 # Environment variable loading
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     print("Note: python-dotenv not installed. Using existing environment variables.")
@@ -33,7 +44,7 @@ from azure.ai.voicelive.models import (
     ServerEventType,
     AzureStandardVoice,
     Modality,
-    InputAudioFormat, 
+    InputAudioFormat,
     OutputAudioFormat,
     FunctionCallOutputItem,
     ItemType,
@@ -45,16 +56,20 @@ from azure.ai.voicelive.models import (
     AzureSemanticVad,
     ServerEventConversationItemCreated,
     MessageItem,
-    ResponseCreateParams
+    ResponseCreateParams,
 )
 
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
+
 
 async def _wait_for_event(conn, wanted_types: set, timeout_s: float = 10.0):
     """Wait until we receive any event whose type is in wanted_types."""
+
     async def _next():
         while True:
             evt = await conn.recv()
@@ -70,6 +85,7 @@ async def _wait_for_match(
     timeout_s: float = 10.0,
 ):
     """Wait until we receive an event that satisfies the given predicate."""
+
     async def _next():
         while True:
             evt = await conn.recv()
@@ -82,7 +98,7 @@ async def _wait_for_match(
 class AudioProcessor:
     """
     Handles real-time audio capture and playback for the voice assistant.
-    
+
     Responsibilities:
     - Captures audio input from the microphone using PyAudio.
     - Plays back audio output using PyAudio.
@@ -108,7 +124,9 @@ class AudioProcessor:
 
         # Audio queues and threading
         self.audio_queue: "queue.Queue[bytes]" = queue.Queue()
-        self.audio_send_queue: "queue.Queue[str]" = queue.Queue()  # base64 audio to send
+        self.audio_send_queue: "queue.Queue[str]" = (
+            queue.Queue()
+        )  # base64 audio to send
         self.executor = ThreadPoolExecutor(max_workers=3)
         self.capture_thread: Optional[threading.Thread] = None
         self.playback_thread: Optional[threading.Thread] = None
@@ -161,7 +179,9 @@ class AudioProcessor:
         while self.is_capturing and self.input_stream:
             try:
                 # Read audio data
-                audio_data = self.input_stream.read(self.chunk_size, exception_on_overflow=False)
+                audio_data = self.input_stream.read(
+                    self.chunk_size, exception_on_overflow=False
+                )
 
                 if audio_data and self.is_capturing:
                     # Convert to base64 and queue for sending
@@ -183,7 +203,8 @@ class AudioProcessor:
                 if audio_base64 and self.is_capturing and self.loop:
                     # Schedule the async send operation in the main event loop
                     future = asyncio.run_coroutine_threadsafe(
-                        self.connection.input_audio_buffer.append(audio=audio_base64), self.loop
+                        self.connection.input_audio_buffer.append(audio=audio_base64),
+                        self.loop,
                     )
                     # Don't wait for completion to avoid blocking
 
@@ -337,41 +358,42 @@ class AsyncFunctionCallingClient:
         self.session_ready: bool = False
         self.tools = tools if tools is not None else {}
 
-         # Define available functions
+        # Define available functions
         self.available_functions = self._build_function_map()
 
     def _build_function_map(self) -> Dict[str, Callable]:
         """Build a mapping of function names to their implementations based on defined tools."""
         function_map = {}
-        
+
         # Import your actual tool functions
         try:
-            from tools import (
-                get_user_information,
-                get_product_information
-            )
-            
+            from tools import get_user_information, get_product_information
+
             # Map function names to implementations
             available_implementations = {
-                'get_user_information': get_user_information,
-                'get_product_information': get_product_information
+                "get_user_information": get_user_information,
+                "get_product_information": get_product_information,
             }
-            
+
             # Only include functions that are defined in tools
             if self.tools:
                 for tool in self.tools:
-                    function_name = tool.get('name', None)
+                    function_name = tool.get("name", None)
                     if function_name and function_name in available_implementations:
-                        function_map[function_name] = available_implementations[function_name]
+                        function_map[function_name] = available_implementations[
+                            function_name
+                        ]
                         logger.info(f"Registered function: {function_name}")
                     else:
-                        logger.warning(f"Function {function_name} defined in tools but implementation not found")
-            
+                        logger.warning(
+                            f"Function {function_name} defined in tools but implementation not found"
+                        )
+
         except ImportError as e:
             logger.error(f"Failed to import tools module: {e}")
 
         return function_map
-      
+
     async def run(self):
         """Run the async function calling client with audio input."""
         try:
@@ -390,14 +412,16 @@ class AsyncFunctionCallingClient:
             ) as connection:
                 # Initialize audio processor
                 self.audio_processor = AudioProcessor(connection)
-                
+
                 # Configure session with function tools
                 await self._setup_session(connection)
-                
+
                 # Start audio playback system
                 await self.audio_processor.start_playback()
-                
-                logger.info("Voice assistant with function calling ready! Start speaking...")
+
+                logger.info(
+                    "Voice assistant with function calling ready! Start speaking..."
+                )
                 print("\n" + "=" * 70)
                 print("🎤 VOICE ASSISTANT WITH FUNCTION CALLING READY")
                 print("Try saying:")
@@ -405,7 +429,7 @@ class AsyncFunctionCallingClient:
                 print("•  Qual é a data de vencimento da minha fatura?")
                 print("Press Ctrl+C to exit")
                 print("=" * 70 + "\n")
-                
+
                 # Process events asynchronously
                 await self._process_events(connection)
 
@@ -425,10 +449,12 @@ class AsyncFunctionCallingClient:
 
         # Create voice configuration
         voice_config = AzureStandardVoice(name=self.voice, type="azure-standard")
-        
+
         # Create turn detection configuration
-        turn_detection_config = AzureSemanticVad(threshold=0.5, prefix_padding_ms=300, silence_duration_ms=500) #ServerVad(threshold=0.5, prefix_padding_ms=300, silence_duration_ms=500)
-        
+        turn_detection_config = AzureSemanticVad(
+            threshold=0.5, prefix_padding_ms=300, silence_duration_ms=500
+        )  # ServerVad(threshold=0.5, prefix_padding_ms=300, silence_duration_ms=500)
+
         # Create session configuration with function tools
         session_config = RequestSession(
             modalities=[Modality.TEXT, Modality.AUDIO],
@@ -441,7 +467,7 @@ class AsyncFunctionCallingClient:
             tool_choice=ToolChoiceLiteral.AUTO,
             input_audio_transcription=AudioInputTranscriptionOptions(model="whisper-1"),
         )
-        
+
         # Send session configuration asynchronously
         await connection.session.update(session=session_config)
         logger.info("Session configuration with function tools sent")
@@ -461,138 +487,149 @@ class AsyncFunctionCallingClient:
         """Handle different types of events from VoiceLive asynchronously."""
         ap = self.audio_processor
         assert ap is not None, "AudioProcessor must be initialized"
-        
+
         if event.type == ServerEventType.SESSION_UPDATED:
             self.session_id = event.session.id
             logger.info(f"Session ready: {self.session_id}")
             self.session_ready = True
-            
+
             # Start audio capture once session is ready
             await ap.start_capture()
             print("🎤 Ready for voice input! Try asking about your credit card...")
-            
+
         elif event.type == ServerEventType.INPUT_AUDIO_BUFFER_SPEECH_STARTED:
             logger.info("🎤 User started speaking - stopping playback")
             print("🎤 Listening...")
-            
+
             # Stop current assistant audio playback (interruption handling)
             await ap.stop_playback()
-            
+
             # Cancel any ongoing response
             try:
                 await connection.response.cancel()
             except Exception as e:
                 logger.debug(f"No response to cancel: {e}")
-                
+
         elif event.type == ServerEventType.INPUT_AUDIO_BUFFER_SPEECH_STOPPED:
             logger.info("🎤 User stopped speaking")
             print("🤔 Processing...")
-            
+
             # Restart playback system for response
             await ap.start_playback()
-            
+
         elif event.type == ServerEventType.RESPONSE_CREATED:
             logger.info("🤖 Assistant response created")
-            
+
         elif event.type == ServerEventType.RESPONSE_TEXT_DELTA:
             logger.info(f"Text response: {event.delta}")
-            
+
         elif event.type == ServerEventType.RESPONSE_AUDIO_DELTA:
             # Stream audio response to speakers
             logger.debug("Received audio delta")
             await ap.queue_audio(event.delta)
-            
+
         elif event.type == ServerEventType.RESPONSE_AUDIO_DONE:
             logger.info("🤖 Assistant finished speaking")
             print("🎤 Ready for next input...")
-            
+
         elif event.type == ServerEventType.RESPONSE_DONE:
             logger.info("✅ Response complete")
             self.function_call_in_progress = False
             self.active_call_id = None
-            
+
         elif event.type == ServerEventType.ERROR:
             logger.error(f"❌ VoiceLive error: {event.error.message}")
             print(f"Error: {event.error.message}")
-            
+
         elif event.type == ServerEventType.CONVERSATION_ITEM_CREATED:
             logger.info(f"Conversation item created: {event.item.id}")
-            
+
             # Check if it's a function call item using the improved pattern from the test
             if event.item.type == ItemType.FUNCTION_CALL:
                 print(f"🔧 Calling function: {event.item.name}")
-                await self._handle_function_call_with_improved_pattern(event, connection)
+                await self._handle_function_call_with_improved_pattern(
+                    event, connection
+                )
 
-    async def _handle_function_call_with_improved_pattern(self, conversation_created_event, connection):
+    async def _handle_function_call_with_improved_pattern(
+        self, conversation_created_event, connection
+    ):
         """Handle function call using the improved pattern from the test."""
         # Validate the event structure
-        if not isinstance(conversation_created_event, ServerEventConversationItemCreated):
+        if not isinstance(
+            conversation_created_event, ServerEventConversationItemCreated
+        ):
             logger.error("Expected ServerEventConversationItemCreated")
             return
-            
+
         if not isinstance(conversation_created_event.item, ResponseFunctionCallItem):
             logger.error("Expected ResponseFunctionCallItem")
             return
-            
+
         function_call_item = conversation_created_event.item
         function_name = function_call_item.name
         call_id = function_call_item.call_id
         previous_item_id = function_call_item.id
-        
+
         logger.info(f"Function call detected: {function_name} with call_id: {call_id}")
-        
+
         try:
             # Set tracking variables
             self.function_call_in_progress = True
             self.active_call_id = call_id
-            
+
             # Wait for the function arguments to be complete
-            function_done = await _wait_for_event(connection, {ServerEventType.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE})
-            
-            if not isinstance(function_done, ServerEventResponseFunctionCallArgumentsDone):
+            function_done = await _wait_for_event(
+                connection, {ServerEventType.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE}
+            )
+
+            if not isinstance(
+                function_done, ServerEventResponseFunctionCallArgumentsDone
+            ):
                 logger.error("Expected ServerEventResponseFunctionCallArgumentsDone")
                 return
-                
+
             if function_done.call_id != call_id:
-                logger.warning(f"Call ID mismatch: expected {call_id}, got {function_done.call_id}")
+                logger.warning(
+                    f"Call ID mismatch: expected {call_id}, got {function_done.call_id}"
+                )
                 return
-                
+
             arguments = function_done.arguments
             logger.info(f"Function arguments received: {arguments}")
-            
+
             # Wait for response to be done before proceeding
             await _wait_for_event(connection, {ServerEventType.RESPONSE_DONE})
-            
+
             # Execute the function if we have it
             if function_name in self.available_functions:
                 logger.info(f"Executing function: {function_name}")
                 result = await self.available_functions[function_name](arguments)
-                
+
                 # Create function call output item
                 function_output = FunctionCallOutputItem(
-                    call_id=call_id,
-                    output=json.dumps(result)
+                    call_id=call_id, output=json.dumps(result)
                 )
-                
+
                 # Send the result back to the conversation with proper previous_item_id
                 await connection.conversation.item.create(
-                    previous_item_id=previous_item_id,
-                    item=function_output
+                    previous_item_id=previous_item_id, item=function_output
                 )
 
                 logger.info(f"Function result sent: {result}")
-                
+
                 # Create a new response to process the function result
                 await connection.response.create()
 
             else:
                 logger.error(f"Unknown function: {function_name}")
-                
+
         except asyncio.TimeoutError:
-            logger.error(f"Timeout waiting for function call completion for {function_name}")
+            logger.error(
+                f"Timeout waiting for function call completion for {function_name}"
+            )
         except Exception as e:
             logger.error(f"Error executing function {function_name}: {e}")
         finally:
             self.function_call_in_progress = False
             self.active_call_id = None
-    

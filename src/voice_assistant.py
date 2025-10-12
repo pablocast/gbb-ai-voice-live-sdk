@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 import sys
 import signal
-import logging 
+import logging
 import asyncio
 
 # Own modules
@@ -17,47 +17,39 @@ load_dotenv(override=True)
 
 api_key = os.getenv("AZURE_VOICELIVE_API_KEY")
 endpoint = os.getenv("AZURE_VOICELIVE_ENDPOINT")
-model = 'gpt-4o-realtime' #os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+model = "gpt-4o-realtime"  # os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
 voice = "pt-BR-FranciscaNeural"
-credential = AzureKeyCredential(api_key) 
+credential = AzureKeyCredential(api_key)
 
 instructions = utils.load_instructions("instructions.txt")
 
-tools = [{
-    "type": "function",
-    "name": "get_user_information",
-    "description": "Search the knowledge base user credit card due date and amount",
-    "parameters": {
-        "type": "object",
-        "properties": {
-        "query": {
-            "type": "string",
-            "description": "The search query string"
-            }
+tools = [
+    {
+        "type": "function",
+        "name": "get_user_information",
+        "description": "Search the knowledge base user credit card due date and amount",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "The search query string"}
+            },
+            "required": ["query"],
         },
-        "required": [
-        "query"
-        ]
-    }
     },
     {
-    "type": "function",  
-    "name": "get_product_information",
-    "description": "Search the knowledge base for relevant product information.",
-    "parameters": {
-        "type": "object",
-        "properties": {
-            "query": {
-                "type": "string",
-                "description": "The search query string"
-            }
+        "type": "function",
+        "name": "get_product_information",
+        "description": "Search the knowledge base for relevant product information.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "The search query string"}
+            },
+            "required": ["query"],
         },
-        "required": [
-            "query"
-        ]
-    }
-}
+    },
 ]
+
 
 async def main():
     """Main async function."""
@@ -68,9 +60,9 @@ async def main():
         model=model,
         voice=voice,
         instructions=instructions,
-        tools=tools
+        tools=tools,
     )
-    
+
     # Setup signal handlers for graceful shutdown
     def signal_handler(sig, frame):
         logger.info("Received shutdown signal")
@@ -79,7 +71,7 @@ async def main():
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    
+
     try:
         await client.run()
     except KeyboardInterrupt:
@@ -88,6 +80,6 @@ async def main():
         logger.error(f"Error: {e}")
         sys.exit(1)
 
+
 if __name__ == "__main__":
     asyncio.run(main())
-
