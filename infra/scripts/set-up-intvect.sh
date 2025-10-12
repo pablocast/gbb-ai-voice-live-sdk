@@ -1,3 +1,3 @@
 # Activate the virtual environment and execute the Python script
 source ./venv/bin/activate
-python setup_intvect.py
+python src/setup_intvect.py
