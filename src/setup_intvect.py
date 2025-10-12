@@ -179,14 +179,10 @@ def upload_documents(azure_credential, indexer_name, azure_search_endpoint, azur
 
     # insert code to verify blob client
     # List all containers to verify connection
-    containers = blob_client.list_containers()
-    logger.info("Available containers:")
-    print([container.name for container in containers])
-
-    # container_client = blob_client.get_container_client(azure_storage_container)
-    # if not container_client.exists():
-    #     container_client.create_container()
-    # existing_blobs = [blob.name for blob in container_client.list_blobs()]
+    container_client = blob_client.get_container_client(azure_storage_container)
+    if not container_client.exists():
+        container_client.create_container()
+    existing_blobs = [blob.name for blob in container_client.list_blobs()]
 
     # # Open each file in /data folder
     # for file in os.scandir("data"):

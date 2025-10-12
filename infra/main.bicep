@@ -11,8 +11,8 @@ param searchIndexName string
 // ------------------
 //    VARIABLES
 // ------------------
-
-var resourceSuffix = uniqueString(subscription().id, resourceGroup().id)
+param deploymentTimestamp string = utcNow('yyyyMMddHHmmss')
+var resourceSuffix = uniqueString(subscription().id, resourceGroup().id, deploymentTimestamp)
 
 // ------------------
 //    RESOURCES
