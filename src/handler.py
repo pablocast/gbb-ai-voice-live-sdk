@@ -566,7 +566,7 @@ class AsyncFunctionCallingClient:
             # Execute the function if we have it
             if function_name in self.available_functions:
                 logger.info(f"Executing function: {function_name}")
-                result = self.available_functions[function_name](arguments)
+                result = await self.available_functions[function_name](arguments)
                 
                 # Create function call output item
                 function_output = FunctionCallOutputItem(
