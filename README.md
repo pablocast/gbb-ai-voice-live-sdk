@@ -66,6 +66,10 @@ This sample uses [`azd`](https://learn.microsoft.com/azure/developer/azure-devel
 
 Ask questions like `Qual a data de vencimento da minha fatura` and `Quais são os beneficios do meu cartao`
 
+## 🌐 Frontend
+
+A Next.js frontend application is available in the `frontend/` directory. See [frontend/README.md](frontend/README.md) for setup and development instructions.
+
 ## 💣 **Delete the Resources**
    ```bash
    azd down --purge

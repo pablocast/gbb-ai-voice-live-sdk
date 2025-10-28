@@ -40,3 +40,8 @@ openai[realtime]
 fastrtc[vad]
 pyaudio
 
+
+# WebSocket Server
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+websockets>=12.0

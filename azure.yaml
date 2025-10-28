@@ -1,6 +1,6 @@
-name: ai-foundry-realtime
+name: gbb-ai-voice-live-sdk
 metadata:
-  template: ai-foundry-realtime@0.0.1-beta
+  template: python-fastapi@latest
 infra:
   provider: bicep
   path: infra
