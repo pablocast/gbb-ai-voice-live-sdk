@@ -1,29 +1,32 @@
-# Stage 1: Build the Vite React frontend
+# Stage 1: Build the Vite app
 FROM node:20-slim AS build-stage
 
-# Set the working directory for frontend build
 WORKDIR /frontend
-
-# Copy package files first for better layer caching
 COPY frontend/package*.json ./
-RUN npm ci --only=production
+
+# Install ALL dependencies (including dev dependencies needed for build)
+RUN npm ci
 
 # Copy frontend source and build
 COPY frontend/ ./
+
+# Debug: Show what we're building
+RUN echo "=== Vite Config ===" && cat vite.config.ts
+
+# Build the frontend
 RUN npm run build
+
+# Debug: Check what was built and where
+RUN echo "=== All contents after build ===" && ls -la
+RUN echo "=== Looking for dist folder ===" && find . -name "dist" -type d
+RUN echo "=== Looking for built files ===" && find . -name "*.html" -o -name "*.js" -o -name "*.css" | head -10
 
 # Stage 2: Setup Python FastAPI backend
 FROM python:3.10-slim AS production-stage
 
-# Set working directory
 WORKDIR /app
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
-
-# Install system dependencies (needed for PyAudio and other audio libs)
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     portaudio19-dev \
     libasound-dev \
@@ -32,34 +35,35 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install Python dependencies
-COPY backend/requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy backend code
+COPY ./backend/ /app
 
-# Install FastAPI production dependencies
-RUN pip install --no-cache-dir \
-    uvicorn[standard]==0.24.0 \
-    gunicorn==21.2.0
-
-# Copy backend source code
-COPY backend/ /app/
-
-# Copy built frontend static files to serve them
+# Copy built frontend static files from build stage to /app/static
 COPY --from=build-stage /frontend/dist /app/static
 
-# Create a non-root user for security
+# Debug: Check if static files were copied
+RUN echo "=== Static files after copy ===" && ls -la /app/static/
+RUN echo "=== Static file contents ===" && find /app/static -name "*.html" -exec head -5 {} \;
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+
+RUN python -m pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --no-cache-dir uvicorn[standard] aiofiles
+
+# Create non-root user
 RUN useradd --create-home --shell /bin/bash --uid 1000 appuser
 RUN chown -R appuser:appuser /app
 USER appuser
 
-# Expose the port FastAPI will run on
 EXPOSE 8000
+
+# Add the missing HEADLESS_MODE environment variable
+ENV HEADLESS_MODE=true
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Command to run the FastAPI application with Uvicorn
-# For production with multiple workers, use:
-# CMD ["gunicorn", "app:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "--timeout", "120"]
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

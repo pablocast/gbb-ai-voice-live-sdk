@@ -5,6 +5,7 @@ import base64
 from typing import Dict, List, Optional
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import uvicorn
 import os
@@ -84,11 +85,17 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Next.js dev server
+    allow_origins=["*"],  # Next.js dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Define API endpoints BEFORE static file mounting
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy", "service": "voice-assistant-websocket"}
 
 
 class WebSocketVoiceClient(AsyncFunctionCallingClient):
@@ -466,18 +473,16 @@ async def interrupt_assistant(client_id: str):
         except Exception as e:
             logger.error(f"Error interrupting assistant for {client_id}: {e}")
 
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "voice-assistant-websocket"}
-
-
-@app.get("/")
-async def root():
-    """Root endpoint"""
-    return {"message": "Voice Assistant WebSocket Server", "version": "1.0.0"}
-
+# Mount static files for frontend
+static_path = os.path.join(os.path.dirname(__file__), "static")
+if os.path.exists(static_path):
+    # Mount ALL static files at root level - this is the key fix
+    app.mount("/", StaticFiles(directory=static_path, html=True), name="static")
+else:
+    # Development fallback
+    @app.get("/")
+    async def root():
+        return {"message": "Voice Assistant WebSocket Server", "version": "1.0.0"}
 
 if __name__ == "__main__":
     uvicorn.run(
