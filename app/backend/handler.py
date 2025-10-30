@@ -367,7 +367,10 @@ class AsyncFunctionCallingClient:
 
         # Import your actual tool functions
         try:
-            from functions.implementations import get_user_information, get_product_information
+            from functions.implementations import (
+                get_user_information,
+                get_product_information,
+            )
 
             # Map function names to implementations
             available_implementations = {

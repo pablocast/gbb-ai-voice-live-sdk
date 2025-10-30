@@ -33,7 +33,7 @@ async def get_user_information(args: dict) -> str:
     """Search the knowledge base user credit card due date and amount."""
     # Extract query from args
     query = args.get("query", "") if isinstance(args, dict) else str(args)
-    
+
     # Generate random due date (between today and 90 days from now)
     today = datetime.now()
     random_days = random.randint(0, 90)
@@ -64,7 +64,9 @@ async def get_product_information(args: dict) -> str:
 
     # Check if search client is initialized
     if not search_client:
-        logger.warning("Azure Search client not initialized. Environment variables missing.")
+        logger.warning(
+            "Azure Search client not initialized. Environment variables missing."
+        )
         return f"Unable to search for '{query}' - Azure Search service not configured."
 
     # Hybrid query using Azure AI Search with Semantic Ranker

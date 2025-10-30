@@ -25,9 +25,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-
 # Global bridge instance
 bridge = VoiceAssistantBridge()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -42,7 +42,7 @@ app = FastAPI(
     title="Voice Assistant WebSocket API",
     description="WebSocket bridge for Azure VoiceLive API",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Add CORS middleware
@@ -53,6 +53,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Define API endpoints BEFORE static file mounting
 @app.get("/health")
@@ -65,15 +66,15 @@ async def health_check():
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
     """WebSocket endpoint for voice assistant communication"""
     await bridge.connect(websocket, client_id)
-    
+
     try:
         while True:
             # Receive message from frontend
             data = await websocket.receive_text()
             message = json.loads(data)
-            
+
             await handle_frontend_message(client_id, message, websocket)
-            
+
     except WebSocketDisconnect:
         logger.info(f"Client {client_id} disconnected")
     except Exception as e:
@@ -85,23 +86,23 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
 async def handle_frontend_message(client_id: str, message: dict, websocket: WebSocket):
     """Handle messages from frontend"""
     message_type = message.get("type")
-    
+
     if message_type == "start_session":
         await start_voice_session(client_id, message.get("config", {}))
-        
+
     elif message_type == "stop_session":
         await stop_voice_session(client_id)
-        
+
     elif message_type == "send_audio":
         await handle_audio_input(client_id, message.get("audio"))
-        
+
     elif message_type == "interrupt":
         await interrupt_assistant(client_id)
-        
+
     elif message_type == "audio_chunk":
         # Handle real-time audio streaming from frontend
         await handle_audio_chunk(client_id, message.get("data"))
-        
+
     else:
         logger.warning(f"Unknown message type: {message_type}")
 
@@ -112,24 +113,26 @@ async def start_voice_session(client_id: str, config: dict):
         # Get environment variables
         endpoint = os.getenv("AZURE_VOICELIVE_ENDPOINT")
         api_key = os.getenv("AZURE_VOICELIVE_API_KEY")
-        
+
         if not endpoint or not api_key:
             raise ValueError("Missing Azure VoiceLive configuration")
 
         # Create credential
         credential = AzureKeyCredential(api_key)
-        
+
         # Load instructions
-        instructions_path = os.path.join(os.path.dirname(__file__), "shared", "instructions.txt")
+        instructions_path = os.path.join(
+            os.path.dirname(__file__), "shared", "instructions.txt"
+        )
         with open(instructions_path, "r", encoding="utf-8") as f:
             instructions = f.read()
-            
+
         # Load tools from YAML configuration
         from tool_loader import get_tool_loader
-        
+
         tool_loader = get_tool_loader()
         tools = tool_loader.get_tool_definitions()
-        
+
         # Log tool environment info
         env_info = tool_loader.get_environment_info()
         logger.info(f"Tool environment: {env_info}")
@@ -139,23 +142,25 @@ async def start_voice_session(client_id: str, config: dict):
             """Stream audio data to frontend via WebSocket."""
             try:
                 # Encode audio data as base64 for WebSocket transmission
-                audio_base64 = base64.b64encode(audio_data).decode('utf-8')
-                
+                audio_base64 = base64.b64encode(audio_data).decode("utf-8")
+
                 message = {
                     "type": "audio_data",
                     "data": audio_base64,
                     "format": "pcm16",
                     "sample_rate": 24000,
                     "channels": 1,
-                    "timestamp": asyncio.get_event_loop().time()
+                    "timestamp": asyncio.get_event_loop().time(),
                 }
-                
+
                 await bridge.send_message(client_id, message)
-                logger.debug(f"🔊 Audio data streamed to client {client_id} ({len(audio_data)} bytes)")
-                
+                logger.debug(
+                    f"🔊 Audio data streamed to client {client_id} ({len(audio_data)} bytes)"
+                )
+
             except Exception as e:
                 logger.error(f"Failed to stream audio to client {client_id}: {e}")
-      
+
         # Create voice client with audio streaming support
         voice_client = WebSocketVoiceClient(
             client_id=client_id,
@@ -163,42 +168,46 @@ async def start_voice_session(client_id: str, config: dict):
             credential=credential,
             bridge=bridge,
             model=config.get("model", "gpt-4o-realtime"),
-            voice=config.get("voice", "pt-BR-FranciscaNeural"),  # Valid VoiceLive API voice
+            voice=config.get(
+                "voice", "pt-BR-FranciscaNeural"
+            ),  # Valid VoiceLive API voice
             instructions=instructions,
             tools=tools,
-            websocket_callback=stream_audio_to_client
+            websocket_callback=stream_audio_to_client,
         )
-        
+
         # Store client
         bridge.voice_clients[client_id] = voice_client
-        
+
         # Send session started event
-        await bridge.send_message(client_id, {
-            "type": "session_started",
-            "status": "success",
-            "message": "Voice session initialized with audio streaming",
-            "config": {
-                "model": voice_client.model,
-                "voice": voice_client.voice,
-                "tools_count": len(tools),
-                "audio_streaming": True,
-                "sample_rate": 24000,
-                "format": "pcm16",
-                "channels": 1
-            }
-        })
-        
+        await bridge.send_message(
+            client_id,
+            {
+                "type": "session_started",
+                "status": "success",
+                "message": "Voice session initialized with audio streaming",
+                "config": {
+                    "model": voice_client.model,
+                    "voice": voice_client.voice,
+                    "tools_count": len(tools),
+                    "audio_streaming": True,
+                    "sample_rate": 24000,
+                    "format": "pcm16",
+                    "channels": 1,
+                },
+            },
+        )
+
         # Start the voice client (this will run in background)
         asyncio.create_task(voice_client.run())
-        
-        logger.info(f"✅ Voice session with audio streaming started for client {client_id}")
-        
+
+        logger.info(
+            f"✅ Voice session with audio streaming started for client {client_id}"
+        )
+
     except Exception as e:
         logger.error(f"Failed to start voice session for {client_id}: {e}")
-        await bridge.send_message(client_id, {
-            "type": "session_error",
-            "error": str(e)
-        })
+        await bridge.send_message(client_id, {"type": "session_error", "error": str(e)})
 
 
 async def stop_voice_session(client_id: str):
@@ -207,11 +216,10 @@ async def stop_voice_session(client_id: str):
         voice_client = bridge.voice_clients[client_id]
         await voice_client.cleanup()
         del bridge.voice_clients[client_id]
-        
-        await bridge.send_message(client_id, {
-            "type": "session_stopped",
-            "status": "success"
-        })
+
+        await bridge.send_message(
+            client_id, {"type": "session_stopped", "status": "success"}
+        )
         logger.info(f"Voice session stopped for client {client_id}")
 
 
@@ -219,7 +227,7 @@ async def handle_audio_input(client_id: str, audio_data: str):
     """Handle audio input from frontend (legacy method)"""
     if client_id not in bridge.voice_clients:
         return
-        
+
     voice_client = bridge.voice_clients[client_id]
     try:
         # Audio data should be base64 encoded
@@ -234,7 +242,7 @@ async def handle_audio_chunk(client_id: str, audio_base64: str):
     if client_id not in bridge.voice_clients:
         logger.warning(f"No voice client found for {client_id}")
         return
-        
+
     voice_client = bridge.voice_clients[client_id]
     try:
         # Process audio chunk
@@ -248,18 +256,22 @@ async def interrupt_assistant(client_id: str):
     """Interrupt the assistant's current response"""
     if client_id not in bridge.voice_clients:
         return
-        
+
     voice_client = bridge.voice_clients[client_id]
     try:
         await voice_client.interrupt_response()
-        await bridge.send_message(client_id, {
-            "type": "assistant_interrupted",
-            "status": "success",
-            "timestamp": asyncio.get_event_loop().time()
-        })
+        await bridge.send_message(
+            client_id,
+            {
+                "type": "assistant_interrupted",
+                "status": "success",
+                "timestamp": asyncio.get_event_loop().time(),
+            },
+        )
         logger.info(f"Assistant interrupted for client {client_id}")
     except Exception as e:
         logger.error(f"Error interrupting assistant for {client_id}: {e}")
+
 
 # Mount static files for frontend
 static_path = os.path.join(os.path.dirname(__file__), "static")
@@ -270,13 +282,11 @@ else:
     # Development fallback
     @app.get("/")
     async def root():
-        return {"message": "Voice Assistant WebSocket Server with Audio Streaming", "version": "1.0.0"}
+        return {
+            "message": "Voice Assistant WebSocket Server with Audio Streaming",
+            "version": "1.0.0",
+        }
+
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "app:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
-    )
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
