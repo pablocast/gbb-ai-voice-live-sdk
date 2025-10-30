@@ -26,10 +26,8 @@ FROM python:3.10-slim AS production-stage
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies (removed audio packages for headless mode)
 RUN apt-get update && apt-get install -y \
-    portaudio19-dev \
-    libasound-dev \
     gcc \
     g++ \
     curl \
@@ -48,9 +46,9 @@ RUN echo "=== Static file contents ===" && find /app/static -name "*.html" -exec
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
+ENV HEADLESS_MODE=true
 
 RUN python -m pip install --no-cache-dir -r requirements.txt
-RUN python -m pip install --no-cache-dir uvicorn[standard] aiofiles
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash --uid 1000 appuser
@@ -58,9 +56,6 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 8000
-
-# Add the missing HEADLESS_MODE environment variable
-ENV HEADLESS_MODE=true
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \

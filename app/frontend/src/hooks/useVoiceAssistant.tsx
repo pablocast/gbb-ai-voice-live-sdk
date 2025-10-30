@@ -1,5 +1,6 @@
 import useWebSocket from "react-use-websocket";
 import { useCallback, useRef } from "react";
+import useAudioPlayer from "./useAudioPlayer";
 
 // Types for our WebSocket messages
 interface VoiceEvent {
@@ -36,7 +37,21 @@ interface SessionEvent {
     model: string;
     voice: string;
     tools_count: number;
+    audio_streaming?: boolean;
+    sample_rate?: number;
+    format?: string;
+    channels?: number;
   };
+}
+
+// Audio streaming interface
+interface AudioDataEvent {
+  type: 'audio_data';
+  data: string; // base64 encoded PCM audio
+  format: string;
+  sample_rate: number;
+  channels: number;
+  timestamp: number;
 }
 
 interface WebSocketMessage {
@@ -68,6 +83,11 @@ type Parameters = {
   onResponseTextDelta?: (event: VoiceEvent & { text: string }) => void;
   onResponseAudioDelta?: (event: VoiceEvent) => void;
   onResponseAudioDone?: (event: VoiceEvent) => void;
+  
+  // Audio streaming handlers
+  onAudioData?: (event: AudioDataEvent) => void;
+  onAudioPlaybackStart?: () => void;
+  onAudioPlaybackStop?: () => void;
   
   // Tool call event handlers
   onToolCallStarted?: (event: ToolCallEvent) => void;
@@ -103,6 +123,9 @@ export default function useVoiceAssistant({
   onResponseTextDelta,
   onResponseAudioDelta,
   onResponseAudioDone,
+  onAudioData,
+  onAudioPlaybackStart,
+  onAudioPlaybackStop,
   onToolCallStarted,
   onToolCallArguments,
   onToolCallExecuting,
@@ -116,16 +139,23 @@ export default function useVoiceAssistant({
   
   const clientIdRef = useRef(clientId || `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
   const wsEndpoint = `${serverUrl}/ws/${clientIdRef.current}`;
+  
+  // Initialize audio player for streaming
+  const audioPlayer = useAudioPlayer();
 
   const { sendJsonMessage, readyState } = useWebSocket(
     wsEndpoint,
     {
       onOpen: () => {
         console.log('WebSocket connected to voice assistant');
+        // Initialize audio player when connection opens
+        audioPlayer.reset();
         onWebSocketOpen?.();
       },
       onClose: () => {
         console.log('WebSocket disconnected from voice assistant');
+        // Stop audio playback when connection closes
+        audioPlayer.stop();
         onWebSocketClose?.();
       },
       onError: (event) => {
@@ -145,6 +175,9 @@ export default function useVoiceAssistant({
 
   const startSession = useCallback((config: SessionConfig = {}) => {
     console.log('Starting voice session with config:', config);
+    // Reset audio player for new session
+    audioPlayer.reset();
+    
     sendJsonMessage({
       type: 'start_session',
       config: {
@@ -153,14 +186,17 @@ export default function useVoiceAssistant({
         ...config
       }
     });
-  }, [sendJsonMessage]);
+  }, [sendJsonMessage, audioPlayer]);
 
   const stopSession = useCallback(() => {
     console.log('Stopping voice session');
+    // Stop audio playback
+    audioPlayer.stop();
+    
     sendJsonMessage({
       type: 'stop_session'
     });
-  }, [sendJsonMessage]);
+  }, [sendJsonMessage, audioPlayer]);
 
   const sendAudio = useCallback((audioData: string) => {
     sendJsonMessage({
@@ -169,12 +205,22 @@ export default function useVoiceAssistant({
     });
   }, [sendJsonMessage]);
 
+  const sendAudioChunk = useCallback((audioData: string) => {
+    sendJsonMessage({
+      type: 'audio_chunk',
+      data: audioData
+    });
+  }, [sendJsonMessage]);
+
   const interruptAssistant = useCallback(() => {
     console.log('Interrupting assistant');
+    // Stop current audio playback
+    audioPlayer.stop();
+    
     sendJsonMessage({
       type: 'interrupt'
     });
-  }, [sendJsonMessage]);
+  }, [sendJsonMessage, audioPlayer]);
 
   const onMessageReceived = useCallback((event: MessageEvent<any>) => {
     let message: WebSocketMessage;
@@ -199,6 +245,11 @@ export default function useVoiceAssistant({
         
       case 'session_error':
         onSessionError?.(message as SessionEvent);
+        break;
+
+      // Audio streaming
+      case 'audio_data':
+        handleAudioData(message as AudioDataEvent);
         break;
 
       // Tool call events
@@ -238,6 +289,7 @@ export default function useVoiceAssistant({
     onSessionStarted,
     onSessionStopped, 
     onSessionError,
+    onAudioData,
     onToolCallStarted,
     onToolCallArguments,
     onToolCallExecuting,
@@ -253,8 +305,33 @@ export default function useVoiceAssistant({
     onResponseAudioDone,
     onConversationItemCreated,
     onTranscriptionCompleted,
-    onError
+    onError,
+    audioPlayer
   ]);
+
+  // Handle audio data streaming
+  const handleAudioData = useCallback((audioEvent: AudioDataEvent) => {
+    try {
+      console.log('Received audio data:', {
+        format: audioEvent.format,
+        sampleRate: audioEvent.sample_rate,
+        channels: audioEvent.channels,
+        dataLength: audioEvent.data.length
+      });
+
+      // Play the audio using the audio player
+      audioPlayer.play(audioEvent.data);
+      
+      // Call the custom handler if provided
+      onAudioData?.(audioEvent);
+      
+      // Trigger playback start event on first audio chunk
+      onAudioPlaybackStart?.();
+      
+    } catch (error) {
+      console.error('Error handling audio data:', error);
+    }
+  }, [audioPlayer, onAudioData, onAudioPlaybackStart]);
 
   const handleVoiceEvent = useCallback((eventData: any, eventType: string) => {
     const voiceEvent: VoiceEvent = {
@@ -280,6 +357,7 @@ export default function useVoiceAssistant({
         
       case 'response.done':
         onResponseDone?.(voiceEvent);
+        onAudioPlaybackStop?.(); // Trigger playback stop when response is done
         break;
         
       case 'response.text.delta':
@@ -290,11 +368,13 @@ export default function useVoiceAssistant({
         break;
         
       case 'response.audio.delta':
+        // Audio deltas are now handled via audio_data messages
         onResponseAudioDelta?.(voiceEvent);
         break;
         
       case 'response.audio.done':
         onResponseAudioDone?.(voiceEvent);
+        onAudioPlaybackStop?.(); // Trigger playback stop
         break;
         
       case 'conversation.item.created':
@@ -322,7 +402,8 @@ export default function useVoiceAssistant({
     onResponseAudioDone,
     onConversationItemCreated,
     onTranscriptionCompleted,
-    onError
+    onError,
+    onAudioPlaybackStop
   ]);
 
   // Connection state helpers
@@ -341,7 +422,11 @@ export default function useVoiceAssistant({
     startSession,
     stopSession,
     sendAudio,
+    sendAudioChunk, // For real-time audio streaming
     interruptAssistant,
+    
+    // Audio player controls
+    audioPlayer, // Expose audio player for direct control
     
     // Raw WebSocket (if needed)
     sendJsonMessage
@@ -354,5 +439,6 @@ export type {
   SessionConfig,
   ToolCallEvent,
   SessionEvent,
+  AudioDataEvent,
   Parameters as VoiceAssistantParameters
 };
