@@ -62,6 +62,7 @@ async def health_check():
     return {"status": "healthy", "service": "voice-assistant-websocket"}
 
 
+# Define WebSocket endpoint
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
     """WebSocket endpoint for voice assistant communication"""
