@@ -7,12 +7,21 @@ param modelsConfig array = []
 param foundryProjectName string = 'demo-realtime'
 param principalId string
 param searchIndexName string
+param logAnalyticsName string = ''
+
+@allowed(['Consumption', 'D4', 'D8', 'D16', 'D32', 'E4', 'E8', 'E16', 'E32', 'NC24-A100', 'NC48-A100', 'NC96-A100'])
+param azureContainerAppsWorkloadProfile string
+param environmentName string
+
+@description('Used by azd for containerapps deployment')
+param webAppExists bool
 
 // ------------------
 //    VARIABLES
 // ------------------
 param deploymentTimestamp string = utcNow('yyyyMMddHHmmss')
 var resourceSuffix = uniqueString(subscription().id, resourceGroup().id, deploymentTimestamp)
+var tags = { 'azd-env-name': environmentName }
 
 // ------------------
 //    RESOURCES
@@ -100,6 +109,7 @@ module searchRoleAssignments './modules/search-role-assignments.bicep' = {
     aiSearchName: aiSearchName
     projectPrincipalId: foundryModule.outputs.extendedAIServicesConfig[0].principalId
     userPrincipalId: principalId
+    containerAppsIdentityPrincipalId: acaIdentity.outputs.principalId
   }
 }
 
@@ -228,6 +238,66 @@ module storageRoleAssignments './modules/storage-role-assignments.bicep' = {
 //   }
 // } 
 
+// Azure container apps resources
+// User-assigned identity for pulling images from ACR
+var acaIdentityName = 'aca-identity-${resourceSuffix}'
+module acaIdentity './modules/security/aca-identity.bicep' = {
+  name: 'aca-identity'
+  scope: resourceGroup()
+  params: {
+    identityName: acaIdentityName
+    location: resourceGroup().location
+  }
+}
+
+module containerApps './modules/host/container-apps.bicep' = {
+  name: 'container-apps'
+  scope: resourceGroup()
+  params: {
+    name: 'app'
+    tags: tags
+    location: resourceGroup().location
+    workloadProfile: azureContainerAppsWorkloadProfile
+    containerAppsEnvironmentName: '${environmentName}-aca-env'
+    containerRegistryName: 'containerregistry${resourceSuffix}'
+    logAnalyticsWorkspaceResourceId: lawModule.outputs.id
+  }
+}
+
+// Container Apps for the web application (Python Quart app with JS frontend)
+module acaBackend './modules/host/container-app-upsert.bicep' = {
+  name: 'aca-web'
+  scope: resourceGroup()
+  dependsOn: [
+    containerApps
+    acaIdentity
+  ]
+  params: {
+    name: '$webapp-backend-${resourceSuffix}'
+    location: resourceGroup().location
+    identityName: acaIdentityName
+    exists: webAppExists
+    workloadProfile: azureContainerAppsWorkloadProfile
+    containerRegistryName: containerApps.outputs.registryName
+    containerAppsEnvironmentName: containerApps.outputs.environmentName
+    identityType: 'UserAssigned'
+    tags: union(tags, { 'azd-service-name': 'backend' })
+    targetPort: 8000
+    containerCpuCoreCount: '1.0'
+    containerMemory: '2Gi'
+    env: {
+      AZURE_VOICELIVE_ENDPOINT: foundryModule.outputs.extendedAIServicesConfig[0].endpoint
+      AZURE_VOICELIVE_API_KEY: foundryModule.outputs.extendedAIServicesConfig[0].apiKey
+      AZURE_SEARCH_ENDPOINT: searchModule.outputs.aiSearchEndpoint
+      AZURE_SEARCH_INDEX: searchIndexName
+      RUNNING_IN_PRODUCTION: 'true'
+      AZURE_CLIENT_ID: acaIdentity.outputs.clientId
+    }
+  }
+}
+
+
+
 // ------------------
 //    OUTPUTS
 // ------------------
@@ -248,3 +318,5 @@ output azureSearchEndpoint string = searchModule.outputs.aiSearchEndpoint
 output azureStorageEndpoint string = storageModule.outputs.endpoint
 output azureStorageConnectionString string = storageModule.outputs.connectionString
 output azureStorageContainer string = storageModule.outputs.containerName
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerApps.outputs.registryLoginServer
+output WEBSITE_URL string = acaBackend.outputs.uri

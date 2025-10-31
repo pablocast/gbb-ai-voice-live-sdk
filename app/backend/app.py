@@ -15,7 +15,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 import os
 
-from webhandler import WebSocketVoiceClient, VoiceAssistantBridge
+from app.backend.web_handler import WebSocketVoiceClient, VoiceAssistantBridge
 from azure.core.credentials import AzureKeyCredential
 
 # Set up logging
