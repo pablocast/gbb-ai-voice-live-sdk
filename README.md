@@ -42,7 +42,7 @@ This repository exemplifies [Voice Live API](https://learn.microsoft.com/en-us/a
    │  │ └─────────────────────────────┘ ││    │                  │    │                     │
    │  └─────────────────────────────────┘│    │                  │    │                     │
    └─────────────────────────────────────┘    └──────────────────┘    └─────────────────────┘
-                WebSocket                           WebSocket
+            WebSocket                           WebSocket
    ```
 
    ## ⚙️ Set Up
