@@ -18,8 +18,8 @@ This repository exemplifies [Voice Live API](https://learn.microsoft.com/en-us/a
 
    ```
       ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────┐
-      │   Client App    │◄──►│  Azure Voice     │◄──►│ Azure AI Search     │
-      │   (This Code)   │    │  Live API        │    │                     │
+      │   Azure Container App    │◄──►│  Azure Voice     │◄──►│ Azure AI Search     │
+      │   (Client App)  │    │  Live API        │    │                     │
       │                 │    │                  │    │                     │
       │ ┌─────────────┐ │    │ ┌──────────────┐ │    │ ┌─────────────────┐ │
       │ │ Microphone  │ │    │ │ GPT-4o       │ │    │ │ Search Index    │ │
