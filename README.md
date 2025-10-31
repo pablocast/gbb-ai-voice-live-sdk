@@ -45,18 +45,11 @@ This repository exemplifies [Voice Live API](https://learn.microsoft.com/en-us/a
             
    ```
 
-   ## ⚙️ Set Up
+   ## ⚙️ Set Up 
 
 This sample uses [`azd`](https://learn.microsoft.com/azure/developer/azure-developer-cli/) and a bicep template to deploy all Azure resources:
 
-1. **Python Environment Setup**
-   ```bash
-   python3.10 -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
-
-2. **Create the infrastructure**
+1. **Create the infrastructure**
    ```bash
    # Login to Azure (if not already logged in)
    az login
@@ -70,17 +63,15 @@ This sample uses [`azd`](https://learn.microsoft.com/azure/developer/azure-devel
    
    After running, an `.env` file will be created with all necessary environment variables
 
+
 ## 🎤 Talk to the agent
-   ```bash
-   source .venv/bin/activate
-   python src/voice_assitant.py  
-   ```
+
+After the application has been successfully deployed you will see a URL printed to the console. Navigate to that URL to interact with the app in your browser. 
 
 Ask questions like `Qual a data de vencimento da minha fatura` and `Quais são os beneficios do meu cartao`
 
-## 🌐 Frontend
+![Demo Screenshot](img/demo-screenshot.png)
 
-A Next.js frontend application is available in the `frontend/` directory. See [frontend/README.md](frontend/README.md) for setup and development instructions.
 
 ## 💣 **Delete the Resources**
    ```bash
