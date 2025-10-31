@@ -49,7 +49,7 @@ This repository exemplifies [Voice Live API](https://learn.microsoft.com/en-us/a
 
 This sample uses [`azd`](https://learn.microsoft.com/azure/developer/azure-developer-cli/) and a bicep template to deploy all Azure resources:
 
-1. **Create the infrastructure**
+**Create the infrastructure**
    ```bash
    # Login to Azure (if not already logged in)
    az login
@@ -60,9 +60,6 @@ This sample uses [`azd`](https://learn.microsoft.com/azure/developer/azure-devel
    # Deploy infrastructure and application to Azure
    azd up
    ```
-   
-   After running, an `.env` file will be created with all necessary environment variables
-
 
 ## 🎤 Talk to the agent
 
