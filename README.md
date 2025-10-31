@@ -25,9 +25,9 @@ This repository exemplifies [Voice Live API](https://learn.microsoft.com/en-us/a
    │  │      (React/TypeScript)         ││    │ │ GPT-4o       │ │    │ │ Search Index    │ │
    │  │                                 ││    │ │ Realtime     │ │    │ │ & Retrieval     │ │
    │  │ ┌─────────────────────────────┐ ││    │ │ Processing   │ │    │ └─────────────────┘ │
-   │  │ │ Microphone Input           │ ││    │ └──────────────┘ │    │                     │
-   │  │ │ Speaker Output             │ ││    │                  │    │ ┌─────────────────┐ │
-   │  │ │ Tool Call UI Display       │ ││    │                  │    │ │ Vector Store    │ │
+   │  │ │ Microphone Input            │ ││    │ └──────────────┘ │    │                     │
+   │  │ │ Speaker Output              │ ││    │                  │    │ ┌─────────────────┐ │
+   │  │ │ Tool Call UI Display        │ ││    │                  │    │ │ Vector Store    │ │
    │  │ └─────────────────────────────┘ ││    │                  │    │ │ & Documents     │ │
    │  └─────────────────┬───────────────┘│    │                  │    │ └─────────────────┘ │
    │                    │ WebSocket      │    │                  │    │                     │
@@ -36,9 +36,9 @@ This repository exemplifies [Voice Live API](https://learn.microsoft.com/en-us/a
    │  │        (FastAPI)                ││◄──►│                  │◄──►│                     │
    │  │                                 ││    │                  │    │                     │
    │  │ ┌─────────────────────────────┐ ││    │                  │    │                     │
-   │  │ │ WebSocket Handler          │ ││    │                  │    │                     │
-   │  │ │ Audio Streaming            │ ││    │                  │    │                     │
-   │  │ │ Tool Execution             │ ││    │                  │    │                     │
+   │  │ │ WebSocket Handler           │ ││    │                  │    │                     │
+   │  │ │ Audio Streaming             │ ││    │                  │    │                     │
+   │  │ │ Tool Execution              │ ││    │                  │    │                     │
    │  │ └─────────────────────────────┘ ││    │                  │    │                     │
    │  └─────────────────────────────────┘│    │                  │    │                     │
    └─────────────────────────────────────┘    └──────────────────┘    └─────────────────────┘
