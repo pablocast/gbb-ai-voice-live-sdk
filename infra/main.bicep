@@ -7,7 +7,6 @@ param modelsConfig array = []
 param foundryProjectName string = 'demo-realtime'
 param principalId string
 param searchIndexName string
-param logAnalyticsName string = ''
 
 @allowed(['Consumption', 'D4', 'D8', 'D16', 'D32', 'E4', 'E8', 'E16', 'E32', 'NC24-A100', 'NC48-A100', 'NC96-A100'])
 param azureContainerAppsWorkloadProfile string
@@ -273,7 +272,7 @@ module acaBackend './modules/host/container-app-upsert.bicep' = {
     acaIdentity
   ]
   params: {
-    name: '$webapp-backend-${resourceSuffix}'
+    name: 'webapp-backend-${resourceSuffix}'
     location: resourceGroup().location
     identityName: acaIdentityName
     exists: webAppExists

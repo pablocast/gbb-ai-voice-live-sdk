@@ -1,9 +1,6 @@
 name: gbb-ai-voice-live-sdk
 metadata:
   template: python-fastapi@latest
-infra:
-  provider: bicep
-  path: infra
 services:
   backend:
     project: ./app
@@ -11,6 +8,9 @@ services:
     host: containerapp
     docker:
       remoteBuild: true
+infra:
+  provider: bicep
+  path: infra
 hooks:
   postdeploy:
     posix:
