@@ -32,7 +32,7 @@ This repository exemplifies [Voice Live API](https://learn.microsoft.com/en-us/a
    │  └─────────────────┬───────────────┘│    │                  │    │ └─────────────────┘ │
    │                    │ WebSocket      │    │                  │    │                     │
    │  ┌─────────────────▼───────────────┐│    │                  │    │                     │
-   │  │        Backend API              ││    │                  │    │                     │
+   │  │        Backend API              ││    │                  │    │                     │                 WS
    │  │        (FastAPI)                ││◄──►│                  │◄──►│                     │
    │  │                                 ││    │                  │    │                     │
    │  │ ┌─────────────────────────────┐ ││    │                  │    │                     │
@@ -42,7 +42,7 @@ This repository exemplifies [Voice Live API](https://learn.microsoft.com/en-us/a
    │  │ └─────────────────────────────┘ ││    │                  │    │                     │
    │  └─────────────────────────────────┘│    │                  │    │                     │
    └─────────────────────────────────────┘    └──────────────────┘    └─────────────────────┘
-            WebSocket                           WebSocket
+            
    ```
 
    ## ⚙️ Set Up
