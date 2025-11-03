@@ -106,7 +106,7 @@ type Parameters = {
 };
 
 export default function useVoiceAssistant({
-  serverUrl = 'ws://localhost:8000',
+  serverUrl,
   clientId,
   autoConnect = true,
   onWebSocketOpen,
@@ -138,8 +138,21 @@ export default function useVoiceAssistant({
 }: Parameters) {
   
   const clientIdRef = useRef(clientId || `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
-  const wsEndpoint = `${serverUrl}/ws/${clientIdRef.current}`;
   
+    const getWebSocketUrl = () => {
+    if (serverUrl) return serverUrl;
+    
+    // Auto-detect based on current page URL
+    if (typeof window !== 'undefined') {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${protocol}//${window.location.host}`;
+    }
+    
+    return 'ws://localhost:8000'; // fallback for development
+  };
+
+  const wsEndpoint = `${getWebSocketUrl()}/ws/${clientIdRef.current}`;
+
   // Initialize audio player for streaming
   const audioPlayer = useAudioPlayer();
 

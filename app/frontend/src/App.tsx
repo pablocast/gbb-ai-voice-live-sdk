@@ -39,7 +39,6 @@ function App() {
         sendAudio,
         interruptAssistant
     } = useVoiceAssistant({
-        serverUrl: 'ws://localhost:8000', // Your backend WebSocket server
         onWebSocketOpen: () => {
             console.log("WebSocket connection opened to voice assistant");
         },
