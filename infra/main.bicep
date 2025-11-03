@@ -257,7 +257,7 @@ module containerApps './modules/host/container-apps.bicep' = {
     tags: tags
     location: resourceGroup().location
     workloadProfile: azureContainerAppsWorkloadProfile
-    containerAppsEnvironmentName: '${environmentName}-aca-env'
+    containerAppsEnvironmentName: '${environmentName}-aca-env-${resourceSuffix}'
     containerRegistryName: 'containerregistry${resourceSuffix}'
     logAnalyticsWorkspaceResourceId: lawModule.outputs.id
   }

@@ -75,3 +75,4 @@ output environmentId string = containerAppsEnvironment.outputs.resourceId
 
 output registryLoginServer string = containerRegistry.outputs.loginServer
 output registryName string = containerRegistry.outputs.name
+output registryResourceId string = containerRegistry.outputs.resourceId

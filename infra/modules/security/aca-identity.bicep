@@ -1,3 +1,5 @@
+targetScope = 'resourceGroup'
+
 param identityName string
 param location string
 
