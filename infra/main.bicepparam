@@ -26,3 +26,6 @@ param modelsConfig = [
 
 param principalId = readEnvironmentVariable('AZURE_PRINCIPAL_ID', 'principalId')
 param searchIndexName = 'voicerag-intvect'
+param azureContainerAppsWorkloadProfile = 'Consumption'
+param environmentName = readEnvironmentVariable('ACA_ENV_NAME', 'voicerag-aca-env')
+param webAppExists = false 

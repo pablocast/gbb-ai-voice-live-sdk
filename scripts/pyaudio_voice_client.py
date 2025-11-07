@@ -7,8 +7,8 @@ import logging
 import asyncio
 
 # Own modules
-from handler import AsyncFunctionCallingClient, AudioProcessor
-import utilities as utils
+from handler import AsyncFunctionCallingClient
+import app.backend.utilities as utils
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

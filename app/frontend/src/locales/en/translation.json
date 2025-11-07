@@ -1,0 +1,21 @@
+{
+    "app": {
+        "title": "Talk to your Voice Agent",
+        "footer": "Built with Azure VoiceLive API",
+        "stopRecording": "Stop recording",
+        "startRecording": "Start recording",
+        "stopConversation": "Stop conversation"
+    },
+    "status": {
+        "notRecordingMessage": "Ask about ContosoBank products and services",
+        "conversationInProgress": "Conversation in progress"
+    },
+    "history": {
+        "answerHistory": "Answer history",
+        "noHistory": "No history yet."
+    },
+    "groundingFiles": {
+        "title": "Grounding files",
+        "description": "Files used to ground the answers."
+    }
+}

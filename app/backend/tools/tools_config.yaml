@@ -1,0 +1,57 @@
+tools:
+  - type: "function"
+    name: "get_user_information"
+    description: "Search the knowledge base for user credit card due date and amount information"
+    parameters:
+      type: "object"
+      properties:
+        query:
+          type: "string"
+          description: "The search query string for user information (e.g., 'credit card due date', 'account balance')"
+      required:
+        - "query"
+    implementation:
+      module: "tools.implementations"
+      function: "get_user_information"
+    enabled: true
+    timeout_seconds: 30
+
+  - type: "function"
+    name: "get_product_information"
+    description: "Search the knowledge base for relevant product information and services"
+    parameters:
+      type: "object"
+      properties:
+        query:
+          type: "string"
+          description: "The search query string for product information (e.g., 'credit card features', 'loan options')"
+      required:
+        - "query"
+    implementation:
+      module: "tools.implementations"
+      function: "get_product_information"
+    enabled: true
+    timeout_seconds: 30
+
+# Tool configuration by environment
+environments:
+  development:
+    enable_all_tools: true
+    log_function_calls: true
+    default_timeout_seconds: 30
+    debug_mode: true
+    
+  production:
+    enable_all_tools: true
+    log_function_calls: false
+    default_timeout_seconds: 10
+    debug_mode: false
+    
+  testing:
+    enable_all_tools: false
+    log_function_calls: true
+    default_timeout_seconds: 5
+    debug_mode: true
+
+# Default environment settings
+default_environment: "production"

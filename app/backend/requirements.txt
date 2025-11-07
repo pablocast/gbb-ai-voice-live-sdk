@@ -1,0 +1,16 @@
+# Azure SDK and AI Services - USED MODULES ONLY
+azure-identity                                # Azure authentication and credentials management
+azure-search-documents==11.7.0b1             # Azure AI Search integration
+azure-ai-voicelive==1.0.0                    # Azure VoiceLive API for real-time voice conversations
+
+# HTTP Client (required by Azure VoiceLive)
+aiohttp                                       # Async HTTP client library
+
+# Configuration and Environment
+PyYAML                                        # YAML configuration file support
+python-dotenv                                # Environment variable management
+
+# Web Server Framework
+fastapi>=0.104.0                             # FastAPI web framework
+uvicorn[standard]>=0.24.0                    # ASGI server for FastAPI
+aiofiles                                      # Async file I/O

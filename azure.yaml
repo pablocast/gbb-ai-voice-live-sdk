@@ -1,6 +1,13 @@
-name: ai-foundry-realtime
+name: gbb-ai-voice-live-sdk
 metadata:
-  template: ai-foundry-realtime@0.0.1-beta
+  template: python-fastapi@latest
+services:
+  backend:
+    project: ./app
+    language: py
+    host: containerapp
+    docker:
+      remoteBuild: true
 infra:
   provider: bicep
   path: infra
@@ -15,6 +22,10 @@ hooks:
         ./infra/scripts/set-env.sh
         echo "Setting up Index..."
         ./infra/scripts/set-up-intvect.sh
+        echo ""
+        echo "🚀 Application deployed successfully!"
+        echo "📱 Website URL: $WEBSITE_URL"
+        echo ""
     windows:
       shell: pwsh
       run: |
@@ -23,3 +34,7 @@ hooks:
         .\infra\scripts\set-env.ps1
         Write-Host "Setting up Index..."
         .\infra\scripts\set-up-intvect.ps1
+        Write-Host ""
+        Write-Host "🚀 Application deployed successfully!" -ForegroundColor Green
+        Write-Host "📱 Website URL: $env:WEBSITE_URL" -ForegroundColor Cyan
+        Write-Host ""

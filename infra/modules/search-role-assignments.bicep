@@ -7,6 +7,9 @@ param projectPrincipalId string
 @description('Principal ID of User')
 param userPrincipalId string
 
+@description('Container Apps Identity Principal ID')
+param containerAppsIdentityPrincipalId string
+
 // Reference to existing AI Search service
 resource searchService 'Microsoft.Search/searchServices@2024-06-01-preview' existing = {
   name: aiSearchName
@@ -88,5 +91,17 @@ resource searchServiceEmbeddingRoleAssignment 'Microsoft.Authorization/roleAssig
     principalType: 'ServicePrincipal'
     principalId: searchService.identity.principalId
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')
+  }
+}
+
+
+//Add read access to search service for container apps identity
+resource containerAppsSearchReaderRoleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid(containerAppsIdentityPrincipalId,  '1407120a-92aa-4202-b7e9-c0e197c71c8f', searchService.id)
+  scope: searchService
+  properties: {
+    principalType: 'ServicePrincipal'
+    principalId: containerAppsIdentityPrincipalId
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', '1407120a-92aa-4202-b7e9-c0e197c71c8f')
   }
 }
