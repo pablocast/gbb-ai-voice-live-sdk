@@ -85,6 +85,15 @@ class WebSocketAudioProcessor:
         self.websocket_callback = None
         logger.info("WebSocket audio processor cleaned up")
 
+    async def stop_playback(self):
+        """Stop audio playback immediately."""
+        if self.websocket_callback:
+            try:
+                # Send stop signal via WebSocket
+                await self.websocket_callback(b'')  # Empty audio = stop signal
+            except Exception as e:
+                logger.error(f"Error stopping playback: {e}")
+        logger.info("Audio playback stopped")
 
 class VoiceAssistantBridge:
     """Bridge between frontend WebSocket and Azure VoiceLive API"""
@@ -309,9 +318,11 @@ class WebSocketVoiceClient:
             # Speech detection events
             elif event_type == ServerEventType.INPUT_AUDIO_BUFFER_SPEECH_STARTED:
                 logger.info("🎤 User started speaking")
+                await self._handle_user_interruption(connection)
 
             elif event_type == ServerEventType.INPUT_AUDIO_BUFFER_SPEECH_STOPPED:
                 logger.info("🎤 User stopped speaking")
+                await self._handle_user_speech_end()
 
             # Response events
             elif event_type == ServerEventType.RESPONSE_CREATED:
@@ -566,14 +577,23 @@ class WebSocketVoiceClient:
             )
 
     async def interrupt_response(self):
-        """Interrupt current response."""
+        """Interrupt current response and stop playback."""
         if self.connection:
             try:
+                # Stop playback on frontend
+                await self.bridge.send_message(self.client_id, {
+                    "type": "stop_playback",
+                    "reason": "manual_interrupt",
+                    "timestamp": asyncio.get_event_loop().time()
+                })
+                
+                # Cancel VoiceLive response
                 await self.connection.response.cancel()
-                logger.info("Response interrupted")
+                
+                logger.info("Response and playback interrupted")
             except Exception as e:
                 logger.error(f"Error interrupting response: {e}")
-
+    
     async def cleanup(self):
         """Clean up resources."""
         self.is_running = False
@@ -581,3 +601,37 @@ class WebSocketVoiceClient:
             await self.audio_processor.cleanup()
         self.connection = None
         logger.info("Voice client cleaned up")
+
+    async def _handle_user_interruption(self, connection):
+        """Handle user interrupting the assistant by speaking."""
+        try:
+            # 1. Stop current audio playback via WebSocket
+            await self.bridge.send_message(self.client_id, {
+                "type": "stop_playback",
+                "reason": "user_interruption",
+                "timestamp": asyncio.get_event_loop().time()
+            })
+            
+            # 2. Cancel any ongoing response from VoiceLive API
+            try:
+                await connection.response.cancel()
+                logger.info("Cancelled ongoing response due to user interruption")
+            except Exception as e:
+                logger.debug(f"No response to cancel: {e}")
+                
+            # 3. Clear audio buffer if needed
+            # await connection.input_audio_buffer.clear()  # Uncomment if available
+            
+        except Exception as e:
+            logger.error(f"Error handling user interruption: {e}")
+
+    async def _handle_user_speech_end(self):
+        """Handle when user stops speaking."""
+        try:
+            # Notify frontend that user finished speaking
+            await self.bridge.send_message(self.client_id, {
+                "type": "user_speech_ended",
+                "timestamp": asyncio.get_event_loop().time()
+            })
+        except Exception as e:
+            logger.error(f"Error handling speech end: {e}")
