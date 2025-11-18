@@ -290,6 +290,16 @@ export default function useVoiceAssistant({
         onAssistantInterrupted?.(message as VoiceEvent);
         break;
 
+      case 'stop_playback':
+        console.log('🛑 Stopping audio playback due to user interruption');
+        audioPlayer.stop();
+        onAudioPlaybackStop?.();
+        break;
+            
+      case 'user_speech_ended':
+        console.log('🎤 User finished speaking');
+        break;
+
       // Voice Live API events (forwarded from backend)
       case 'voice_event':
         handleVoiceEvent(message.data, message.event_type);
